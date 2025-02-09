@@ -2,57 +2,64 @@ import fp from "fastify-plugin";
 import Database from "better-sqlite3";
 
 
-const filePath = "./database/database.db";
+const filePath = "./database/cinema-database.db";
 
 
 // Defines SQL statement to create tables - note that we don't use VARCHAR as SQLite automatically converts it to TEXT //
 // We use cascading deletes to ensure that child-data is deleted when parent-data is deleted //
 const createTableStatements = `
-    CREATE TABLE IF NOT EXISTS customers (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL, -- to identify the customer
-        email TEXT NOT NULL, -- to contact the customer by email
-        phone TEXT NOT NULL, -- to contact the customer by phone
-        address TEXT NOT NULL, -- to know where the customer is located
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
-    
-    CREATE TABLE IF NOT EXISTS offers (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        customer_id INTEGER NOT NULL, -- to link the offer to a customer
-        title TEXT NOT NULL, -- to identify the offer
-        description TEXT NOT NULL, -- to describe the offer
-        price REAL NOT NULL, -- to specify the price of the offer
-        currency TEXT CHECK(currency IN ('EUR', 'USD', 'GBP')) NOT NULL, -- to specify the currency of the price
-        status TEXT CHECK(status IN ('draft', 'in_progress', 'active', 'on_ice')) NOT NULL, 
-        created_by TEXT NOT NULL, -- to assign the offer to an account manager
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
-    );
-    
-    CREATE TABLE IF NOT EXISTS documents (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        offer_id INTEGER NOT NULL, -- to link the document to an offer
-        filename TEXT NOT NULL, -- to identify the document
-        file_url TEXT NOT NULL, -- to access the document
-        uploaded_by TEXT NOT NULL, -- to know who uploaded the document
-        uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (offer_id) REFERENCES offers(id) ON DELETE CASCADE
-    );
-    
-    CREATE TABLE IF NOT EXISTS comments (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        offer_id INTEGER NOT NULL, -- to link the comment to an offer
-        author TEXT NOT NULL, -- to identify the author of the comment
-        content TEXT NOT NULL, -- to specify the content of the comment
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (offer_id) REFERENCES offers(id) ON DELETE CASCADE
-    );
+    CREATE TABLE IF NOT EXISTS Building (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    address TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Hall (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    building_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    seats INTEGER NOT NULL,
+    FOREIGN KEY (building_id) REFERENCES Building(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Movie (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    genre TEXT NOT NULL,
+    duration_minutes INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Actor (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    birth_date DATE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS MovieActor (
+    movie_id INTEGER NOT NULL,
+    actor_id INTEGER NOT NULL,
+    PRIMARY KEY (movie_id, actor_id),
+    FOREIGN KEY (movie_id) REFERENCES Movie(id) ON DELETE CASCADE,
+    FOREIGN KEY (actor_id) REFERENCES Actor(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Screening (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    movie_id INTEGER NOT NULL,
+    hall_id INTEGER NOT NULL,
+    date_time DATETIME NOT NULL,
+    FOREIGN KEY (movie_id) REFERENCES Movie(id) ON DELETE CASCADE,
+    FOREIGN KEY (hall_id) REFERENCES Hall(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Revenue (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    screening_id INTEGER NOT NULL,
+    total_revenue REAL NOT NULL,
+    FOREIGN KEY (screening_id) REFERENCES Screening(id) ON DELETE CASCADE
+);
 `;
+
 
 // Initialize the database
 const db = new Database(filePath);

@@ -1,36 +1,25 @@
-const customerSchema = {
-    $id: "customerSchema",
+const actorSchema = {
+    $id: "actorSchema",
     type: "object",
     properties: {
         id: { type: "integer" },
         name: { type: "string" },
-        email: { type: "string" },
-        phone: { type: "string" },
-        address: { type: "string" },
-        created_at: { type: "string" },
-        updated_at: { type: "string" },
+        birth_date: { type: "string", format: "date" },
     },
 };
 
-const getCustomersOptions = {
+const getActorsOptions = {
     schema: {
-        querystring: {
-            type: "object",
-            properties: {
-                name: { type: "string" },
-                email: { type: "string" }
-            }
-        },
         response: {
             200: {
                 type: "array",
-                items: { $ref: "customerSchema#" },
+                items: { $ref: "actorSchema#" },
             },
         },
     },
 };
 
-const getCustomerOptions = {
+const getActorOptions = {
     schema: {
         params: {
             type: "object",
@@ -43,37 +32,35 @@ const getCustomerOptions = {
             200: {
                 type: "object",
                 properties: {
-                    customer: { $ref: "customerSchema#" },
+                    actor: { $ref: "actorSchema#" },
                 },
             },
         },
     },
 };
 
-const createCustomerOptions = {
+const createActorOptions = {
     schema: {
         body: {
             type: "object",
             properties: {
                 name: { type: "string" },
-                email: { type: "string" },
-                phone: { type: "string" },
-                address: { type: "string" },
+                birth_date: { type: "string", format: "date" },
             },
-            required: ["name", "email", "phone", "address"],
+            required: ["name", "birth_date"],
         },
         response: {
             201: {
                 type: "object",
                 properties: {
-                    customer: { $ref: "customerSchema#" },
+                    actor: { $ref: "actorSchema#" },
                 },
             },
         },
     },
 };
 
-const updateCustomerOptions = {
+const updateActorOptions = {
     schema: {
         params: {
             type: "object",
@@ -86,23 +73,22 @@ const updateCustomerOptions = {
             type: "object",
             properties: {
                 name: { type: "string" },
-                email: { type: "string" },
-                phone: { type: "string" },
-                address: { type: "string" },
+                birth_date: { type: "string", format: "date" },
             },
+            required: ["name", "birth_date"],
         },
         response: {
             200: {
                 type: "object",
                 properties: {
-                    customer: { $ref: "customerSchema#" },
+                    actor: { $ref: "actorSchema#" },
                 },
             },
         },
     },
 };
 
-const deleteCustomerOptions = {
+const deleteActorOptions = {
     schema: {
         params: {
             type: "object",
@@ -123,10 +109,10 @@ const deleteCustomerOptions = {
 };
 
 export {
-    customerSchema,
-    getCustomersOptions,
-    getCustomerOptions,
-    createCustomerOptions,
-    updateCustomerOptions,
-    deleteCustomerOptions
+    actorSchema,
+    getActorsOptions,
+    getActorOptions,
+    createActorOptions,
+    updateActorOptions,
+    deleteActorOptions,
 };
