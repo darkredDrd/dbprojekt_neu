@@ -16,12 +16,12 @@ export async function createBuilding(building) {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(actor),
+        body: JSON.stringify(building),
     });
     return response.json();
 }
 
-export async function updateBuilding(id, actor) {
+export async function updateBuilding(id, building) {
     const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
         headers: {

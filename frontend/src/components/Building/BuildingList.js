@@ -1,24 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { fetchActors } from '../../services/actorService';
+import { fetchBuildings } from '../../services/buildingService';
 
-function ActorList() {
-    const [actors, setActors] = useState([]);
+function BuildingList() {
+    const [building, setBuildings] = useState([]);
 
     useEffect(() => {
-        async function loadActors() {
-            const actors = await fetchActors();
-            setActors(actors);
+        async function loadBuildings() {
+            const actors = await fetchBuildings();
+            setBuildings(buildings);
         }
-        loadActors();
+        loadBuildings();
     }, []);
 
     return (
         <div className="container mt-5">
-            <h2>Actors</h2>
+            <h2>Buildings</h2>
             <ul className="list-group">
-                {actors.map(actor => (
-                    <li key={actor.id} className="list-group-item">
-                        {actor.name} - {actor.birth_date}
+                {buildings.map(building => (
+                    <li key={building.id} className="list-group-item">
+                        {building.name} - {building.address}
                     </li>
                 ))}
             </ul>
@@ -26,4 +26,4 @@ function ActorList() {
     );
 }
 
-export default ActorList;
+export default BuildingList;
