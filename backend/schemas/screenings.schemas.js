@@ -79,7 +79,6 @@ const updateScreeningOptions = {
                 hall_id: { type: "integer" },
                 date_time: { type: "string", format: "date-time" },
             },
-            required: ["movie_id", "hall_id", "date_time"],
         },
         response: {
             200: {
