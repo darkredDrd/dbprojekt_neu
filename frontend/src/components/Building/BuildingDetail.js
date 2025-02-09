@@ -21,7 +21,7 @@ function BuildingDetail({ match }) {
         <div className="container mt-5">
             <h2>Building Detail</h2>
             <p>Name: {building.name}</p>
-            <p>Birth Date: {building.birth_date}</p>
+            <p>Address: {building.address}</p>
         </div>
     );
 }

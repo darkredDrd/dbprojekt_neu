@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
-import { createActor } from '../../services/actorService';
+import { createBuilding } from '../../services/buildingService';
 
-function ActorForm() {
+function BuildingForm() {
     const [name, setName] = useState('');
-    const [birthDate, setBirthDate] = useState('');
+    const [address, setAddress] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const actor = { name, birth_date: birthDate };
-        await createActor(actor);
+        const building = { name, address: address };
+        await createBuilding(building);
         setName('');
-        setBirthDate('');
+        setAddress('');
     };
 
     return (
         <div className="container mt-5">
-            <h2>Add Actor</h2>
+            <h2>Add Building</h2>
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label>Name</label>
@@ -28,19 +28,19 @@ function ActorForm() {
                     />
                 </div>
                 <div className="form-group">
-                    <label>Birth Date</label>
+                    <label>Address</label>
                     <input
-                        type="date"
+                        type="string"
                         className="form-control"
-                        value={birthDate}
-                        onChange={(e) => setBirthDate(e.target.value)}
+                        value={address}
+                        onChange={(e) => setAddres(e.target.value)}
                         required
                     />
                 </div>
-                <button type="submit" className="btn btn-primary">Add Actor</button>
+                <button type="submit" className="btn btn-primary">Add Building</button>
             </form>
         </div>
     );
 }
 
-export default ActorForm;
+export default BuildingForm;
