@@ -26,16 +26,9 @@ fastify.addSchema(movieSchema);
 fastify.addSchema(revenueSchema);
 fastify.addSchema(screeningSchema);
 
-// CORS integration to improve security for Frontend
+// CORS integration to allow all origins
 fastify.register(cors, {
-    origin: (origin, cb) => {
-        const allowedOrigins = ['http://localhost:3000'];
-        if (!origin || allowedOrigins.includes(origin)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Not allowed by CORS'));
-        }
-    }
+    origin: true
 });
 
 fastify.register(dbConnector);
