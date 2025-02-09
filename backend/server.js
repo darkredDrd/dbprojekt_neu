@@ -29,7 +29,7 @@ fastify.addSchema(screeningSchema);
 // CORS integration to improve security for Frontend
 fastify.register(cors, {
     origin: (origin, cb) => {
-        const allowedOrigins = ['http://localhost:5173'];
+        const allowedOrigins = ['http://localhost:3000'];
         if (!origin || allowedOrigins.includes(origin)) {
             cb(null, true);
         } else {
