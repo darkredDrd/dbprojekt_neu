@@ -1,8 +1,18 @@
-export function getScreenings(fastify) {
+import redis from './redisClient.js';
+
+export async function getScreenings(fastify) {
+    const cacheKey = 'screenings';
+    const cachedScreenings = await redis.get(cacheKey);
+
+    if (cachedScreenings) {
+        return JSON.parse(cachedScreenings);
+    }
+
     const statement = fastify.db.prepare("SELECT * FROM Screening");
 
     try {
         const screenings = statement.all();
+        await redis.set(cacheKey, JSON.stringify(screenings), 'EX', 3600); // Cache für 1 Stunde
         return screenings;
     } catch (err) {
         fastify.log.error(err);
@@ -22,7 +32,7 @@ export function getScreeningById(fastify, id) {
     }
 }
 
-export function createScreening(fastify, screeningProps) {
+export async function createScreening(fastify, screeningProps) {
     if (!screeningProps.movie_id || !screeningProps.hall_id || !screeningProps.date_time) {
         throw new Error('Missing required screening properties.');
     }
@@ -40,6 +50,8 @@ export function createScreening(fastify, screeningProps) {
             throw new Error('Failed to insert screening.');
         }
 
+        await redis.del('screenings'); // Cache invalidieren
+
         return selectStatement.get(info.lastInsertRowid);
     } catch (err) {
         fastify.log.error(err);
@@ -47,7 +59,7 @@ export function createScreening(fastify, screeningProps) {
     }
 }
 
-export function updateScreening(fastify, id, screeningProps) {
+export async function updateScreening(fastify, id, screeningProps) {
     const fields = [];
     const values = [];
 
@@ -80,6 +92,8 @@ export function updateScreening(fastify, id, screeningProps) {
             throw new Error(`Screening with ID ${id} not found`);
         }
 
+        await redis.del('screenings'); // Cache invalidieren
+
         return selectStatement.get(id);
     } catch (err) {
         fastify.log.error(err);
@@ -87,7 +101,7 @@ export function updateScreening(fastify, id, screeningProps) {
     }
 }
 
-export function deleteScreening(fastify, id) {
+export async function deleteScreening(fastify, id) {
     const deleteStatement = fastify.db.prepare("DELETE FROM Screening WHERE id = ?");
     const selectStatement = fastify.db.prepare("SELECT * FROM Screening WHERE id = ?");
 
@@ -99,6 +113,8 @@ export function deleteScreening(fastify, id) {
         if (info.changes === 0) {
             throw new Error(`Screening with ID ${id} not found`);
         }
+
+        await redis.del('screenings'); // Cache invalidieren
 
         return screeningToDelete;
     } catch (err) {
