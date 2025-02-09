@@ -75,7 +75,6 @@ const updateActorOptions = {
                 name: { type: "string" },
                 birth_date: { type: "string", format: "date" },
             },
-            required: ["name", "birth_date"],
         },
         response: {
             200: {

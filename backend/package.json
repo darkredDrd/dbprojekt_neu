@@ -1,20 +1,18 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "Implementation of a Portal to digitalize offers",
+  "description": "Implementation of a Cinema Portal",
   "main": "index.js",
   "scripts": {
     "start": "node --watch server.js"
   },
-  "author": "Niclas Schmidt & Timo Haberkorn",
+  "author": "Niclas Schmidt, Daniel Harfert, Jan Schuff, Jonathan Weiss, Jannik Joos, Robin Böhm & Ozan Yörük",
   "license": "ISC",
   "type": "module",
   "dependencies": {
     "@fastify/cors": "^10.0.2",
-    "@fastify/multipart": "^9.0.3",
     "better-sqlite3": "^11.7.2",
     "fastify": "^5.2.1",
-    "fastify-plugin": "^5.0.1",
-    "uuid": "^11.0.5"
+    "fastify-plugin": "^5.0.1"
   }
 }
