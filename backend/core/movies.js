@@ -1,8 +1,18 @@
-export function getMovies(fastify) {
+import redis from './redisClient.js';
+
+export async function getMovies(fastify) {
+    const cacheKey = 'movies';
+    const cachedMovies = await redis.get(cacheKey);
+
+    if (cachedMovies) {
+        return JSON.parse(cachedMovies);
+    }
+
     const statement = fastify.db.prepare("SELECT * FROM Movie");
 
     try {
         const movies = statement.all();
+        await redis.set(cacheKey, JSON.stringify(movies), 'EX', 3600); // Cache für 1 Stunde
         return movies;
     } catch (err) {
         fastify.log.error(err);
@@ -22,7 +32,7 @@ export function getMovieById(fastify, id) {
     }
 }
 
-export function createMovie(fastify, movieProps) {
+export async function createMovie(fastify, movieProps) {
     if (!movieProps.title || !movieProps.genre || !movieProps.duration_minutes) {
         throw new Error('Missing required movie properties.');
     }
@@ -40,6 +50,8 @@ export function createMovie(fastify, movieProps) {
             throw new Error('Failed to insert movie.');
         }
 
+        await redis.del('movies'); // Cache invalidieren
+
         return selectStatement.get(info.lastInsertRowid);
     } catch (err) {
         fastify.log.error(err);
@@ -47,7 +59,7 @@ export function createMovie(fastify, movieProps) {
     }
 }
 
-export function updateMovie(fastify, id, movieProps) {
+export async function updateMovie(fastify, id, movieProps) {
     const fields = [];
     const values = [];
 
@@ -80,6 +92,8 @@ export function updateMovie(fastify, id, movieProps) {
             throw new Error(`Movie with ID ${id} not found`);
         }
 
+        await redis.del('movies'); // Cache invalidieren
+
         return selectStatement.get(id);
     } catch (err) {
         fastify.log.error(err);
@@ -87,7 +101,7 @@ export function updateMovie(fastify, id, movieProps) {
     }
 }
 
-export function deleteMovie(fastify, id) {
+export async function deleteMovie(fastify, id) {
     const deleteStatement = fastify.db.prepare("DELETE FROM Movie WHERE id = ?");
     const selectStatement = fastify.db.prepare("SELECT * FROM Movie WHERE id = ?");
 
@@ -99,6 +113,8 @@ export function deleteMovie(fastify, id) {
         if (info.changes === 0) {
             throw new Error(`Movie with ID ${id} not found`);
         }
+
+        await redis.del('movies'); // Cache invalidieren
 
         return movieToDelete;
     } catch (err) {

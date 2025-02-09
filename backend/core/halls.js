@@ -1,8 +1,18 @@
-export function getHalls(fastify) {
+import redis from './redisClient.js';
+
+export async function getHalls(fastify) {
+    const cacheKey = 'halls';
+    const cachedHalls = await redis.get(cacheKey);
+
+    if (cachedHalls) {
+        return JSON.parse(cachedHalls);
+    }
+
     const statement = fastify.db.prepare("SELECT * FROM Hall");
 
     try {
         const halls = statement.all();
+        await redis.set(cacheKey, JSON.stringify(halls), 'EX', 3600); // Cache für 1 Stunde
         return halls;
     } catch (err) {
         fastify.log.error(err);
@@ -22,7 +32,7 @@ export function getHallById(fastify, id) {
     }
 }
 
-export function createHall(fastify, hallProps) {
+export async function createHall(fastify, hallProps) {
     if (!hallProps.building_id || !hallProps.name || !hallProps.seats) {
         throw new Error('Missing required hall properties.');
     }
@@ -40,6 +50,8 @@ export function createHall(fastify, hallProps) {
             throw new Error('Failed to insert hall.');
         }
 
+        await redis.del('halls'); // Cache invalidieren
+
         return selectStatement.get(info.lastInsertRowid);
     } catch (err) {
         fastify.log.error(err);
@@ -47,7 +59,7 @@ export function createHall(fastify, hallProps) {
     }
 }
 
-export function updateHall(fastify, id, hallProps) {
+export async function updateHall(fastify, id, hallProps) {
     const fields = [];
     const values = [];
 
@@ -80,6 +92,8 @@ export function updateHall(fastify, id, hallProps) {
             throw new Error(`Hall with ID ${id} not found`);
         }
 
+        await redis.del('halls'); // Cache invalidieren
+
         return selectStatement.get(id);
     } catch (err) {
         fastify.log.error(err);
@@ -87,7 +101,7 @@ export function updateHall(fastify, id, hallProps) {
     }
 }
 
-export function deleteHall(fastify, id) {
+export async function deleteHall(fastify, id) {
     const deleteStatement = fastify.db.prepare("DELETE FROM Hall WHERE id = ?");
     const selectStatement = fastify.db.prepare("SELECT * FROM Hall WHERE id = ?");
 
@@ -99,6 +113,8 @@ export function deleteHall(fastify, id) {
         if (info.changes === 0) {
             throw new Error(`Hall with ID ${id} not found`);
         }
+
+        await redis.del('halls'); // Cache invalidieren
 
         return hallToDelete;
     } catch (err) {
