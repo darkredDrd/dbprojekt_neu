@@ -6,6 +6,9 @@ import ActorDetail from './components/Actor/ActorDetail';
 import BuildingList from './components/Building/BuildingList';
 import BuildingForm from './components/Building/BuildingForm';
 import BuildingDetail from './components/Building/BuildingDetail';
+import MovieList from './components/Movie/MovieList';
+import MovieForm from './components/Movie/MovieForm';
+import MovieDetail from './components/Movie/MovieDetail';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -28,17 +31,23 @@ function App() {
                             <li className="nav-item">
                                 <a className="nav-link" href="/buildings">Buildings</a>
                             </li>
+                            <li className="nav-item">
+                                <a className="nav-link" href="/movies">Movies</a>
+                            </li>
                         </ul>
                     </div>
                 </nav>
                 <Switch>
-                    <Route path="/" exact component={ActorList} />  /*hier in den input köönte mann alle packen*/
+                    <Route path="/" exact component={ActorList} />
                     <Route path="/actors" exact component={ActorList} />
                     <Route path="/actors/new" component={ActorForm} />
                     <Route path="/actors/:id" component={ActorDetail} />
                     <Route path="/buildings" exact component={BuildingList} />
                     <Route path="/buildings/new" component={BuildingForm} />
                     <Route path="/buildings/:id" component={BuildingDetail} />
+                    <Route path="/movies" exact component={MovieList} />
+                    <Route path="/movies/new" component={MovieForm} />
+                    <Route path="/movies/:id" component={MovieDetail} />
                 </Switch>
                 <footer className="bg-dark text-white text-center py-3">
                     <div className="container">

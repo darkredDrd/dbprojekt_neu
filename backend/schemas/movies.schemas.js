@@ -4,12 +4,10 @@ const movieSchema = {
     properties: {
         id: { type: "integer" },
         title: { type: "string" },
-        description: { type: "string" },
-        release_date: { type: "string", format: "date" },
-        duration: { type: "integer" },
-        rating: { type: "number" },
+        genre: { type: "string" },
+        duration_minutes: { type: "integer" },
     },
-    required: ["title", "description", "release_date", "duration", "rating"],
+    required: ["title", "genre", "duration_minutes"],
 };
 
 const getMoviesOptions = {
@@ -18,8 +16,8 @@ const getMoviesOptions = {
             type: "object",
             properties: {
                 title: { type: "string" },
-                release_date: { type: "string", format: "date" },
-                rating: { type: "number" },
+                genre: { type: "string" },
+                duration_minutes: { type: "integer" },
             },
         },
         response: {
@@ -57,12 +55,10 @@ const createMovieOptions = {
             type: "object",
             properties: {
                 title: { type: "string" },
-                description: { type: "string" },
-                release_date: { type: "string", format: "date" },
-                duration: { type: "integer" },
-                rating: { type: "number" },
+                genre: { type: "string" },
+                duration_minutes: { type: "integer" },
             },
-            required: ["title", "description", "release_date", "duration", "rating"],
+            required: ["title", "genre", "duration_minutes"],
         },
         response: {
             201: {
@@ -88,10 +84,8 @@ const updateMovieOptions = {
             type: "object",
             properties: {
                 title: { type: "string" },
-                description: { type: "string" },
-                release_date: { type: "string", format: "date" },
-                duration: { type: "integer" },
-                rating: { type: "number" },
+                genre: { type: "string" },
+                duration_minutes: { type: "integer" },
             },
         },
         response: {
