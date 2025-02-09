@@ -4,7 +4,7 @@ const actorSchema = {
     properties: {
         id: { type: "integer" },
         name: { type: "string" },
-        birth_date: { type: "string", format: "date" },
+        birth_date: { type: "string", format: "date" }, //Example: "birth_date": "1980-01-01"
     },
 };
 
