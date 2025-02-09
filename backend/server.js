@@ -1,6 +1,5 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
-import multipart from "@fastify/multipart";
 import { customerRoutes } from "./routes/customer.routes.js";
 import { commentRoutes } from "./routes/comment.routes.js";
 import { documentRoutes } from "./routes/document.routes.js";
@@ -24,8 +23,6 @@ fastify.addSchema(legacyOfferSchema);
 fastify.addSchema(offerSchema);
 fastify.addSchema(testGenerateSchema);
 
-// Register the multipart plugin
-fastify.register(multipart);
 
 // CORS integration to improve security for Frontend
 fastify.register(cors, {
@@ -39,29 +36,6 @@ fastify.register(cors, {
     }
 });
 
-// // Add a hook to set the default Authorization header if not present
-// fastify.addHook('onRequest', async (request, reply) => {
-//     if (!request.headers['authorization']) {
-//         request.headers['authorization'] = 'Basic User';
-//     }
-// });
-
-// Add a preHandler hook to log handle authorization
-fastify.addHook('preHandler', async (request, reply) => {
-    const authHeader = request.headers['authorization'];
-    if (!authHeader) {
-        reply.code(401).send({ error: 'Authorization header is missing' });
-        return;
-    }
-
-    const [scheme, role] = authHeader.split(' ');
-    if (scheme !== 'Basic' || !['Account-Manager', 'Developer', 'User'].includes(role)) {
-        reply.code(401).send({ error: 'Invalid authorization scheme or role' });
-        return;
-    }
-
-    request.role = role;
-});
 
 fastify.register(dbConnector);
 fastify.register(customerRoutes, { prefix: "/api" });
