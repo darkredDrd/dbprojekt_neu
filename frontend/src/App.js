@@ -9,6 +9,9 @@ import BuildingDetail from './components/Building/BuildingDetail';
 import MovieList from './components/Movie/MovieList';
 import MovieForm from './components/Movie/MovieForm';
 import MovieDetail from './components/Movie/MovieDetail';
+import ScreeningList from './components/Screening/ScreeningList';
+import ScreeningForm from './components/Screening/ScreeningForm';
+import ScreeningDetail from './components/Screening/ScreeningDetail';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -34,6 +37,9 @@ function App() {
                             <li className="nav-item">
                                 <a className="nav-link" href="/movies">Movies</a>
                             </li>
+                            <li className="nav-item">
+                                <a className="nav-link" href="/screenings">Screenings</a>
+                            </li>
                         </ul>
                     </div>
                 </nav>
@@ -48,6 +54,9 @@ function App() {
                     <Route path="/movies" exact component={MovieList} />
                     <Route path="/movies/new" component={MovieForm} />
                     <Route path="/movies/:id" component={MovieDetail} />
+                    <Route path="/screenings" exact component={ScreeningList} />
+                    <Route path="/screenings/new" component={ScreeningForm} />
+                    <Route path="/screenings/:id" component={ScreeningDetail} />
                 </Switch>
                 <footer className="bg-dark text-white text-center py-3">
                     <div className="container">
