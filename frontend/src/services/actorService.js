@@ -2,6 +2,9 @@ const API_URL = 'http://localhost:8080/api/actors';
 
 export async function fetchActors() {
     const response = await fetch(API_URL);
+    if (!response.ok) {
+        throw new Error('Failed to fetch actors');
+    }
     return response.json();
 }
 
