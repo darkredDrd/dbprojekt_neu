@@ -1,23 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { fetchActors } from '../../services/actorService';
-import { addActorToMovie } from '../../services/movieActorService';
+import { addActorToMovie, fetchMovieActors } from '../../services/movieActorService';
 
 function ActorModal({ show, handleClose, movieId, refreshMovies }) {
     const [actors, setActors] = useState([]);
     const [selectedActorId, setSelectedActorId] = useState('');
+    const [existingActors, setExistingActors] = useState([]);
 
     useEffect(() => {
         async function loadActors() {
             const actors = await fetchActors();
             setActors(actors);
         }
+
+        async function loadExistingActors() {
+            const actors = await fetchMovieActors(movieId);
+            setExistingActors(actors);
+        }
+
         if (show) {
             loadActors();
+            loadExistingActors();
         }
-    }, [show]);
+    }, [show, movieId]);
 
     const handleAddActor = async () => {
         if (selectedActorId) {
+            const actorExists = existingActors.some(actor => actor.id === parseInt(selectedActorId, 10));
+            if (actorExists) {
+                alert('The actor already exists in the movie.');
+                return;
+            }
             await addActorToMovie(movieId, selectedActorId);
             refreshMovies();
             handleClose();

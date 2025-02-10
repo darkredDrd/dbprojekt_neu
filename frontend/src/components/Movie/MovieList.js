@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchMovies, deleteMovie } from '../../services/movieService';
-import { fetchMovieActors, addActorToMovie, deleteActorFromMovie } from '../../services/movieActorService';
+import { fetchMovieActors, deleteActorFromMovie } from '../../services/movieActorService';
 import MovieModal from './MovieModal';
 import ActorModal from './ActorModal';
 
