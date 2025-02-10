@@ -12,6 +12,9 @@ import MovieDetail from './components/Movie/MovieDetail';
 import ScreeningList from './components/Screening/ScreeningList';
 import ScreeningForm from './components/Screening/ScreeningForm';
 import ScreeningDetail from './components/Screening/ScreeningDetail';
+import HallList from './components/Hall/HallList';
+import HallForm from './components/Hall/HallForm';
+import HallDetail from './components/Hall/HallDetail';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -40,6 +43,9 @@ function App() {
                             <li className="nav-item">
                                 <a className="nav-link" href="/screenings">Screenings</a>
                             </li>
+                            <li className="nav-item">
+                                <a className="nav-link" href="/halls">Halls</a>
+                            </li>
                         </ul>
                     </div>
                 </nav>
@@ -57,6 +63,9 @@ function App() {
                     <Route path="/screenings" exact component={ScreeningList} />
                     <Route path="/screenings/new" component={ScreeningForm} />
                     <Route path="/screenings/:id" component={ScreeningDetail} />
+                    <Route path="/halls" exact component={HallList} />
+                    <Route path="/halls/new" component={HallForm} />
+                    <Route path="/halls/:id" component={HallDetail} />
                 </Switch>
                 <footer className="bg-dark text-white text-center py-3">
                     <div className="container">
