@@ -15,7 +15,11 @@ import ScreeningDetail from './components/Screening/ScreeningDetail';
 import HallList from './components/Hall/HallList';
 import HallForm from './components/Hall/HallForm';
 import HallDetail from './components/Hall/HallDetail';
+import RevenueList from './components/Revenue/RevenueList';
+import RevenueForm from './components/Revenue/RevenueForm';
+import RevenueDetail from './components/Revenue/RevenueDetail';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 function App() {
     return (
@@ -46,6 +50,9 @@ function App() {
                             <li className="nav-item">
                                 <a className="nav-link" href="/halls">Halls</a>
                             </li>
+                            <li className="nav-item">
+                                <a className="nav-link" href="/revenues">Revenues</a>
+                            </li>
                         </ul>
                     </div>
                 </nav>
@@ -66,6 +73,10 @@ function App() {
                     <Route path="/halls" exact component={HallList} />
                     <Route path="/halls/new" component={HallForm} />
                     <Route path="/halls/:id" component={HallDetail} />
+                    <Route path="/revenues" exact component={RevenueList} />
+                    <Route path="/revenues/new" component={RevenueForm} />
+                    <Route path="/revenues/:id" exact component={RevenueDetail} />
+                    <Route path="/revenues/:id/edit" component={RevenueForm} />
                 </Switch>
                 <footer className="bg-dark text-white text-center py-3">
                     <div className="container">

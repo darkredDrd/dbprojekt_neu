@@ -106,12 +106,13 @@ function MovieList() {
                                             {movie.actors.map(actor => (
                                                 <li key={actor.id}>
                                                     {actor.name}
-                                                    <button
-                                                        className="btn btn-danger btn-sm ml-2"
+                                                    <span
+                                                        className="text-danger ml-2"
+                                                        style={{ cursor: 'pointer' }}
                                                         onClick={() => handleDeleteActor(movie.id, actor.id)}
                                                     >
                                                         <i className="fas fa-trash"></i>
-                                                    </button>
+                                                    </span>
                                                 </li>
                                             ))}
                                         </ul>
