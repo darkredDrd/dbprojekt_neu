@@ -1,17 +1,9 @@
 import {
-    getActors,
-    getActorById,
-    createActor,
-    updateActor,
-    deleteActor
-} from '../core/actors.js';
-import {
-    getActorsOptions,
-    getActorOptions,
-    createActorOptions,
-    updateActorOptions,
-    deleteActorOptions
-} from '../schemas/actors.schemas.js';
+    getCollection,
+    insertDocument,
+    updateDocument,
+    deleteDocument
+} from '../database/mockDatabase.js';
 
 /**
  * Includes the routes for the '/actors' API endpoint.
@@ -24,75 +16,44 @@ import {
  * - DELETE an actor by ID
  */
 async function actorRoutes(fastify, options) {
-    fastify.get("/actors", getActorsOptions, async (request, reply) => {
-        const actors = getActors(fastify);
-
-        if (!actors) {
-            reply.code(500);
-            return { error: "Could not get actors" };
-        }
-
-        reply.code(200);
-        return actors;
+    fastify.get("/actors", async (request, reply) => {
+        const actors = getCollection('actors');
+        reply.code(200).send(actors);
     });
 
-    fastify.get("/actors/:id", getActorOptions, async (request, reply) => {
+    fastify.get("/actors/:id", async (request, reply) => {
         const id = parseInt(request.params.id, 10);
-
-        const actor = getActorById(fastify, id);
-        if (!actor) {
-            reply.code(400);
-            return { error: `Actor with ID ${id} not found` };
-        }
-
-        reply.code(200);
-        return { actor: actor };
-    });
-
-    fastify.post("/actors", createActorOptions, async (request, reply) => {
-        const actorProps = request.body;
-
-        try {
-            const actor = await createActor(fastify, actorProps);
-
-            if (!actor) {
-                reply.code(500);
-                return { error: "Could not create actor" };
-            }
-
-            reply.code(201);
-            return { actor: actor };
-        } catch (err) {
-            reply.code(400).send({ error: err.message });
-        }
-    });
-
-    fastify.put("/actors/:id", updateActorOptions, async (request, reply) => {
-        const id = parseInt(request.params.id, 10);
-        const actorProps = request.body;
-
-        try {
-            const actor = await updateActor(fastify, id, actorProps);
-
-            if (!actor) {
-                reply.code(400).send({ error: `Actor with ID ${id} not found` });
-            } else {
-                reply.code(200).send({ actor: actor });
-            }
-        } catch (err) {
-            reply.code(400).send({ error: err.message });
-        }
-    });
-
-    fastify.delete("/actors/:id", deleteActorOptions, async (request, reply) => {
-        const id = parseInt(request.params.id, 10);
-
-        const actor = deleteActor(fastify, id);
-
+        const actor = getCollection('actors').find(a => a.id === id);
         if (!actor) {
             reply.code(400).send({ error: `Actor with ID ${id} not found` });
         } else {
-            reply.code(200).send({ message: `Actor with ID ${id} successfully deleted` });
+            reply.code(200).send(actor);
+        }
+    });
+
+    fastify.post("/actors", async (request, reply) => {
+        const newActor = request.body;
+        const insertedActor = insertDocument('actors', newActor);
+        reply.code(201).send(insertedActor);
+    });
+
+    fastify.put("/actors/:id", async (request, reply) => {
+        const id = parseInt(request.params.id, 10);
+        const updatedActor = updateDocument('actors', id, request.body);
+        if (!updatedActor) {
+            reply.code(400).send({ error: `Actor with ID ${id} not found` });
+        } else {
+            reply.code(200).send(updatedActor);
+        }
+    });
+
+    fastify.delete("/actors/:id", async (request, reply) => {
+        const id = parseInt(request.params.id, 10);
+        const deletedActor = deleteDocument('actors', id);
+        if (!deletedActor) {
+            reply.code(400).send({ error: `Actor with ID ${id} not found` });
+        } else {
+            reply.code(200).send(deletedActor);
         }
     });
 }

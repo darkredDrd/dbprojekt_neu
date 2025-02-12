@@ -1,17 +1,9 @@
 import {
-    getHalls,
-    getHallById,
-    createHall,
-    updateHall,
-    deleteHall
-} from '../core/halls.js';
-import {
-    getHallsOptions,
-    getHallOptions,
-    createHallOptions,
-    updateHallOptions,
-    deleteHallOptions
-} from '../schemas/halls.schemas.js';
+    getCollection,
+    insertDocument,
+    updateDocument,
+    deleteDocument
+} from '../database/mockDatabase.js';
 
 /**
  * Includes the routes for the '/halls' API endpoint.
@@ -24,75 +16,44 @@ import {
  * - DELETE a hall by ID
  */
 async function hallRoutes(fastify, options) {
-    fastify.get("/halls", getHallsOptions, async (request, reply) => {
-        const halls = getHalls(fastify);
-
-        if (!halls) {
-            reply.code(500);
-            return { error: "Could not get halls" };
-        }
-
-        reply.code(200);
-        return halls;
+    fastify.get("/halls", async (request, reply) => {
+        const halls = getCollection('halls');
+        reply.code(200).send(halls);
     });
 
-    fastify.get("/halls/:id", getHallOptions, async (request, reply) => {
+    fastify.get("/halls/:id", async (request, reply) => {
         const id = parseInt(request.params.id, 10);
-
-        const hall = getHallById(fastify, id);
-        if (!hall) {
-            reply.code(400);
-            return { error: `Hall with ID ${id} not found` };
-        }
-
-        reply.code(200);
-        return { hall: hall };
-    });
-
-    fastify.post("/halls", createHallOptions, async (request, reply) => {
-        const hallProps = request.body;
-
-        try {
-            const hall = await createHall(fastify, hallProps);
-
-            if (!hall) {
-                reply.code(500);
-                return { error: "Could not create hall" };
-            }
-
-            reply.code(201);
-            return { hall: hall };
-        } catch (err) {
-            reply.code(400).send({ error: err.message });
-        }
-    });
-
-    fastify.put("/halls/:id", updateHallOptions, async (request, reply) => {
-        const id = parseInt(request.params.id, 10);
-        const hallProps = request.body;
-
-        try {
-            const hall = await updateHall(fastify, id, hallProps);
-
-            if (!hall) {
-                reply.code(400).send({ error: `Hall with ID ${id} not found` });
-            } else {
-                reply.code(200).send({ hall: hall });
-            }
-        } catch (err) {
-            reply.code(400).send({ error: err.message });
-        }
-    });
-
-    fastify.delete("/halls/:id", deleteHallOptions, async (request, reply) => {
-        const id = parseInt(request.params.id, 10);
-
-        const hall = deleteHall(fastify, id);
-
+        const hall = getCollection('halls').find(h => h.id === id);
         if (!hall) {
             reply.code(400).send({ error: `Hall with ID ${id} not found` });
         } else {
-            reply.code(200).send({ message: `Hall with ID ${id} successfully deleted` });
+            reply.code(200).send(hall);
+        }
+    });
+
+    fastify.post("/halls", async (request, reply) => {
+        const newHall = request.body;
+        const insertedHall = insertDocument('halls', newHall);
+        reply.code(201).send(insertedHall);
+    });
+
+    fastify.put("/halls/:id", async (request, reply) => {
+        const id = parseInt(request.params.id, 10);
+        const updatedHall = updateDocument('halls', id, request.body);
+        if (!updatedHall) {
+            reply.code(400).send({ error: `Hall with ID ${id} not found` });
+        } else {
+            reply.code(200).send(updatedHall);
+        }
+    });
+
+    fastify.delete("/halls/:id", async (request, reply) => {
+        const id = parseInt(request.params.id, 10);
+        const deletedHall = deleteDocument('halls', id);
+        if (!deletedHall) {
+            reply.code(400).send({ error: `Hall with ID ${id} not found` });
+        } else {
+            reply.code(200).send(deletedHall);
         }
     });
 }
