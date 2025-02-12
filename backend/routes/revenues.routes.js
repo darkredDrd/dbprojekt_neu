@@ -1,17 +1,9 @@
 import {
-    getRevenues,
-    getRevenueById,
-    createRevenue,
-    updateRevenue,
-    deleteRevenue
-} from '../core/revenues.js';
-import {
-    getRevenuesOptions,
-    getRevenueOptions,
-    createRevenueOptions,
-    updateRevenueOptions,
-    deleteRevenueOptions
-} from '../schemas/revenues.schemas.js';
+    getCollection,
+    insertDocument,
+    updateDocument,
+    deleteDocument
+} from '../database/mockDatabase.js';
 
 /**
  * Includes the routes for the '/revenues' API endpoint.
@@ -24,75 +16,44 @@ import {
  * - DELETE a revenue by ID
  */
 async function revenueRoutes(fastify, options) {
-    fastify.get("/revenues", getRevenuesOptions, async (request, reply) => {
-        const revenues = getRevenues(fastify);
-
-        if (!revenues) {
-            reply.code(500);
-            return { error: "Could not get revenues" };
-        }
-
-        reply.code(200);
-        return revenues;
+    fastify.get("/revenues", async (request, reply) => {
+        const revenues = getCollection('revenues');
+        reply.code(200).send(revenues);
     });
 
-    fastify.get("/revenues/:id", getRevenueOptions, async (request, reply) => {
+    fastify.get("/revenues/:id", async (request, reply) => {
         const id = parseInt(request.params.id, 10);
-
-        const revenue = getRevenueById(fastify, id);
-        if (!revenue) {
-            reply.code(400);
-            return { error: `Revenue with ID ${id} not found` };
-        }
-
-        reply.code(200);
-        return { revenue: revenue };
-    });
-
-    fastify.post("/revenues", createRevenueOptions, async (request, reply) => {
-        const revenueProps = request.body;
-
-        try {
-            const revenue = await createRevenue(fastify, revenueProps);
-
-            if (!revenue) {
-                reply.code(500);
-                return { error: "Could not create revenue" };
-            }
-
-            reply.code(201);
-            return { revenue: revenue };
-        } catch (err) {
-            reply.code(400).send({ error: err.message });
-        }
-    });
-
-    fastify.put("/revenues/:id", updateRevenueOptions, async (request, reply) => {
-        const id = parseInt(request.params.id, 10);
-        const revenueProps = request.body;
-
-        try {
-            const revenue = await updateRevenue(fastify, id, revenueProps);
-
-            if (!revenue) {
-                reply.code(400).send({ error: `Revenue with ID ${id} not found` });
-            } else {
-                reply.code(200).send({ revenue: revenue });
-            }
-        } catch (err) {
-            reply.code(400).send({ error: err.message });
-        }
-    });
-
-    fastify.delete("/revenues/:id", deleteRevenueOptions, async (request, reply) => {
-        const id = parseInt(request.params.id, 10);
-
-        const revenue = deleteRevenue(fastify, id);
-
+        const revenue = getCollection('revenues').find(r => r.id === id);
         if (!revenue) {
             reply.code(400).send({ error: `Revenue with ID ${id} not found` });
         } else {
-            reply.code(200).send({ message: `Revenue with ID ${id} successfully deleted` });
+            reply.code(200).send(revenue);
+        }
+    });
+
+    fastify.post("/revenues", async (request, reply) => {
+        const newRevenue = request.body;
+        const insertedRevenue = insertDocument('revenues', newRevenue);
+        reply.code(201).send(insertedRevenue);
+    });
+
+    fastify.put("/revenues/:id", async (request, reply) => {
+        const id = parseInt(request.params.id, 10);
+        const updatedRevenue = updateDocument('revenues', id, request.body);
+        if (!updatedRevenue) {
+            reply.code(400).send({ error: `Revenue with ID ${id} not found` });
+        } else {
+            reply.code(200).send(updatedRevenue);
+        }
+    });
+
+    fastify.delete("/revenues/:id", async (request, reply) => {
+        const id = parseInt(request.params.id, 10);
+        const deletedRevenue = deleteDocument('revenues', id);
+        if (!deletedRevenue) {
+            reply.code(400).send({ error: `Revenue with ID ${id} not found` });
+        } else {
+            reply.code(200).send(deletedRevenue);
         }
     });
 }
