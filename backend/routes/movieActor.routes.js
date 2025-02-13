@@ -10,7 +10,10 @@ import {
     getMovieActorOptions,
     createMovieActorOptions,
     updateMovieActorOptions,
-    deleteMovieActorOptions
+    deleteMovieActorOptions,
+    getActorsForMovieOptions,
+    addActorToMovieOptions,
+    deleteActorFromMovieOptions
 } from '../schemas/movieActor.schemas.js';
 import {
     getCollection,
@@ -30,12 +33,12 @@ import {
  * - DELETE a movie actor by movie_id and actor_id
  */
 async function movieActorRoutes(fastify, options) {
-    fastify.get("/movieActors", async (request, reply) => {
+    fastify.get("/movieActors", getMovieActorsOptions, async (request, reply) => {
         const movieActors = getCollection('movieActors');
         reply.code(200).send(movieActors);
     });
 
-    fastify.get("/movieActors/:movie_id/:actor_id", async (request, reply) => {
+    fastify.get("/movieActors/:movie_id/:actor_id", getMovieActorOptions, async (request, reply) => {
         const movie_id = parseInt(request.params.movie_id, 10);
         const actor_id = parseInt(request.params.actor_id, 10);
         const movieActor = getCollection('movieActors').find(ma => ma.movie_id === movie_id && ma.actor_id === actor_id);
@@ -46,13 +49,13 @@ async function movieActorRoutes(fastify, options) {
         }
     });
 
-    fastify.post("/movieActors", async (request, reply) => {
+    fastify.post("/movieActors", createMovieActorOptions, async (request, reply) => {
         const newMovieActor = request.body;
         const insertedMovieActor = insertDocument('movieActors', newMovieActor);
         reply.code(201).send(insertedMovieActor);
     });
 
-    fastify.put("/movieActors/:movie_id/:actor_id", async (request, reply) => {
+    fastify.put("/movieActors/:movie_id/:actor_id", updateMovieActorOptions, async (request, reply) => {
         const movie_id = parseInt(request.params.movie_id, 10);
         const actor_id = parseInt(request.params.actor_id, 10);
         const updatedMovieActor = updateDocument('movieActors', { movie_id, actor_id }, request.body);
@@ -63,7 +66,7 @@ async function movieActorRoutes(fastify, options) {
         }
     });
 
-    fastify.delete("/movieActors/:movie_id/:actor_id", async (request, reply) => {
+    fastify.delete("/movieActors/:movie_id/:actor_id", deleteMovieActorOptions, async (request, reply) => {
         const movie_id = parseInt(request.params.movie_id, 10);
         const actor_id = parseInt(request.params.actor_id, 10);
         const deletedMovieActor = deleteDocument('movieActors', { movie_id, actor_id });
@@ -75,7 +78,7 @@ async function movieActorRoutes(fastify, options) {
     });
 
     // Add this route to fetch actors for a specific movie
-    fastify.get("/movies/:movie_id/actors", async (request, reply) => {
+    fastify.get("/movies/:movie_id/actors", getActorsForMovieOptions, async (request, reply) => {
         const movie_id = parseInt(request.params.movie_id, 10);
         const statement = fastify.db.prepare(`
             SELECT Actor.id, Actor.name
@@ -94,7 +97,7 @@ async function movieActorRoutes(fastify, options) {
     });
 
     // Add this route to add an actor to a specific movie
-    fastify.post("/movies/:movie_id/actors", async (request, reply) => {
+    fastify.post("/movies/:movie_id/actors", addActorToMovieOptions, async (request, reply) => {
         const movie_id = parseInt(request.params.movie_id, 10);
         const { actorId } = request.body;
 
@@ -113,7 +116,7 @@ async function movieActorRoutes(fastify, options) {
     });
 
     // Add this route to delete an actor from a specific movie
-    fastify.delete("/movies/:movie_id/actors/:actor_id", async (request, reply) => {
+    fastify.delete("/movies/:movie_id/actors/:actor_id", deleteActorFromMovieOptions, async (request, reply) => {
         const movie_id = parseInt(request.params.movie_id, 10);
         const actor_id = parseInt(request.params.actor_id, 10);
 

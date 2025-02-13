@@ -5,6 +5,14 @@ import {
     deleteDocument
 } from '../database/mockDatabase.js';
 
+import {
+    getMoviesOptions,
+    getMovieOptions,
+    createMovieOptions,
+    updateMovieOptions,
+    deleteMovieOptions
+} from '../schemas/movies.schemas.js';
+
 /**
  * Includes the routes for the '/movies' API endpoint.
  * 
@@ -16,12 +24,12 @@ import {
  * - DELETE a movie by ID
  */
 async function movieRoutes(fastify, options) {
-    fastify.get("/movies", async (request, reply) => {
+    fastify.get("/movies", { schema: getMoviesOptions.schema }, async (request, reply) => {
         const movies = getCollection('movies');
         reply.code(200).send(movies);
     });
 
-    fastify.get("/movies/:id", async (request, reply) => {
+    fastify.get("/movies/:id", { schema: getMovieOptions.schema }, async (request, reply) => {
         const id = parseInt(request.params.id, 10);
         const movie = getCollection('movies').find(m => m.id === id);
         if (!movie) {
@@ -31,13 +39,13 @@ async function movieRoutes(fastify, options) {
         }
     });
 
-    fastify.post("/movies", async (request, reply) => {
+    fastify.post("/movies", { schema: createMovieOptions.schema }, async (request, reply) => {
         const newMovie = request.body;
         const insertedMovie = insertDocument('movies', newMovie);
         reply.code(201).send(insertedMovie);
     });
 
-    fastify.put("/movies/:id", async (request, reply) => {
+    fastify.put("/movies/:id", { schema: updateMovieOptions.schema }, async (request, reply) => {
         const id = parseInt(request.params.id, 10);
         const updatedMovie = updateDocument('movies', id, request.body);
         if (!updatedMovie) {
@@ -47,7 +55,7 @@ async function movieRoutes(fastify, options) {
         }
     });
 
-    fastify.delete("/movies/:id", async (request, reply) => {
+    fastify.delete("/movies/:id", { schema: deleteMovieOptions.schema }, async (request, reply) => {
         const id = parseInt(request.params.id, 10);
         const deletedMovie = deleteDocument('movies', id);
         if (!deletedMovie) {

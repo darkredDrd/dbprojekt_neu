@@ -4,6 +4,13 @@ import {
     updateDocument,
     deleteDocument
 } from '../database/mockDatabase.js';
+import {
+    getHallsOptions,
+    getHallOptions,
+    createHallOptions,
+    updateHallOptions,
+    deleteHallOptions
+} from '../schemas/halls.schemas.js';
 
 /**
  * Includes the routes for the '/halls' API endpoint.
@@ -16,12 +23,12 @@ import {
  * - DELETE a hall by ID
  */
 async function hallRoutes(fastify, options) {
-    fastify.get("/halls", async (request, reply) => {
+    fastify.get("/halls", getHallsOptions, async (request, reply) => {
         const halls = getCollection('halls');
         reply.code(200).send(halls);
     });
 
-    fastify.get("/halls/:id", async (request, reply) => {
+    fastify.get("/halls/:id", getHallOptions, async (request, reply) => {
         const id = parseInt(request.params.id, 10);
         const hall = getCollection('halls').find(h => h.id === id);
         if (!hall) {
@@ -31,13 +38,13 @@ async function hallRoutes(fastify, options) {
         }
     });
 
-    fastify.post("/halls", async (request, reply) => {
+    fastify.post("/halls", createHallOptions, async (request, reply) => {
         const newHall = request.body;
         const insertedHall = insertDocument('halls', newHall);
         reply.code(201).send(insertedHall);
     });
 
-    fastify.put("/halls/:id", async (request, reply) => {
+    fastify.put("/halls/:id", updateHallOptions, async (request, reply) => {
         const id = parseInt(request.params.id, 10);
         const updatedHall = updateDocument('halls', id, request.body);
         if (!updatedHall) {
@@ -47,7 +54,7 @@ async function hallRoutes(fastify, options) {
         }
     });
 
-    fastify.delete("/halls/:id", async (request, reply) => {
+    fastify.delete("/halls/:id", deleteHallOptions, async (request, reply) => {
         const id = parseInt(request.params.id, 10);
         const deletedHall = deleteDocument('halls', id);
         if (!deletedHall) {
