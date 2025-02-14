@@ -4,14 +4,21 @@ import {
     updateDocument,
     deleteDocument
 } from '../database/mockDatabase.js';
+import {
+    getBuildingsOptions,
+    getBuildingOptions,
+    createBuildingOptions,
+    updateBuildingOptions,
+    deleteBuildingOptions
+} from '../schemas/buildings.schemas.js';
 
 async function buildingRoutes(fastify, options) {
-    fastify.get("/buildings", async (request, reply) => {
+    fastify.get("/buildings", getBuildingsOptions, async (request, reply) => {
         const buildings = getCollection('buildings');
         reply.code(200).send(buildings);
     });
 
-    fastify.get("/buildings/:id", async (request, reply) => {
+    fastify.get("/buildings/:id", getBuildingOptions, async (request, reply) => {
         const id = parseInt(request.params.id, 10);
         const building = getCollection('buildings').find(b => b.id === id);
         if (!building) {
@@ -21,13 +28,13 @@ async function buildingRoutes(fastify, options) {
         }
     });
 
-    fastify.post("/buildings", async (request, reply) => {
+    fastify.post("/buildings", createBuildingOptions, async (request, reply) => {
         const newBuilding = request.body;
         const insertedBuilding = insertDocument('buildings', newBuilding);
         reply.code(201).send(insertedBuilding);
     });
 
-    fastify.put("/buildings/:id", async (request, reply) => {
+    fastify.put("/buildings/:id", updateBuildingOptions, async (request, reply) => {
         const id = parseInt(request.params.id, 10);
         const updatedBuilding = updateDocument('buildings', id, request.body);
         if (!updatedBuilding) {
@@ -37,7 +44,7 @@ async function buildingRoutes(fastify, options) {
         }
     });
 
-    fastify.delete("/buildings/:id", async (request, reply) => {
+    fastify.delete("/buildings/:id", deleteBuildingOptions, async (request, reply) => {
         const id = parseInt(request.params.id, 10);
         const deletedBuilding = deleteDocument('buildings', id);
         if (!deletedBuilding) {

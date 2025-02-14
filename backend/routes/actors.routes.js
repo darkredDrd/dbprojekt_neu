@@ -4,6 +4,13 @@ import {
     updateDocument,
     deleteDocument
 } from '../database/mockDatabase.js';
+import {
+    getActorsOptions,
+    getActorOptions,
+    createActorOptions,
+    updateActorOptions,
+    deleteActorOptions
+} from '../schemas/actors.schemas.js';
 
 /**
  * Includes the routes for the '/actors' API endpoint.
@@ -16,12 +23,12 @@ import {
  * - DELETE an actor by ID
  */
 async function actorRoutes(fastify, options) {
-    fastify.get("/actors", async (request, reply) => {
+    fastify.get("/actors", getActorsOptions, async (request, reply) => {
         const actors = getCollection('actors');
         reply.code(200).send(actors);
     });
 
-    fastify.get("/actors/:id", async (request, reply) => {
+    fastify.get("/actors/:id", getActorOptions, async (request, reply) => {
         const id = parseInt(request.params.id, 10);
         const actor = getCollection('actors').find(a => a.id === id);
         if (!actor) {
@@ -31,13 +38,13 @@ async function actorRoutes(fastify, options) {
         }
     });
 
-    fastify.post("/actors", async (request, reply) => {
+    fastify.post("/actors", createActorOptions, async (request, reply) => {
         const newActor = request.body;
         const insertedActor = insertDocument('actors', newActor);
         reply.code(201).send(insertedActor);
     });
 
-    fastify.put("/actors/:id", async (request, reply) => {
+    fastify.put("/actors/:id", updateActorOptions, async (request, reply) => {
         const id = parseInt(request.params.id, 10);
         const updatedActor = updateDocument('actors', id, request.body);
         if (!updatedActor) {
@@ -47,7 +54,7 @@ async function actorRoutes(fastify, options) {
         }
     });
 
-    fastify.delete("/actors/:id", async (request, reply) => {
+    fastify.delete("/actors/:id", deleteActorOptions, async (request, reply) => {
         const id = parseInt(request.params.id, 10);
         const deletedActor = deleteDocument('actors', id);
         if (!deletedActor) {

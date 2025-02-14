@@ -5,6 +5,14 @@ import {
     deleteDocument
 } from '../database/mockDatabase.js';
 
+import {
+    getScreeningsOptions,
+    getScreeningOptions,
+    createScreeningOptions,
+    updateScreeningOptions,
+    deleteScreeningOptions
+} from '../schemas/screenings.schemas.js';
+
 /**
  * Includes the routes for the '/screenings' API endpoint.
  * 
@@ -16,12 +24,12 @@ import {
  * - DELETE a screening by ID
  */
 async function screeningRoutes(fastify, options) {
-    fastify.get("/screenings", async (request, reply) => {
+    fastify.get("/screenings", { schema: getScreeningsOptions }, async (request, reply) => {
         const screenings = getCollection('screenings');
         reply.code(200).send(screenings);
     });
 
-    fastify.get("/screenings/:id", async (request, reply) => {
+    fastify.get("/screenings/:id", { schema: getScreeningOptions }, async (request, reply) => {
         const id = parseInt(request.params.id, 10);
         const screening = getCollection('screenings').find(s => s.id === id);
         if (!screening) {
@@ -31,13 +39,13 @@ async function screeningRoutes(fastify, options) {
         }
     });
 
-    fastify.post("/screenings", async (request, reply) => {
+    fastify.post("/screenings", { schema: createScreeningOptions }, async (request, reply) => {
         const newScreening = request.body;
         const insertedScreening = insertDocument('screenings', newScreening);
         reply.code(201).send(insertedScreening);
     });
 
-    fastify.put("/screenings/:id", async (request, reply) => {
+    fastify.put("/screenings/:id", { schema: updateScreeningOptions }, async (request, reply) => {
         const id = parseInt(request.params.id, 10);
         const updatedScreening = updateDocument('screenings', id, request.body);
         if (!updatedScreening) {
@@ -47,7 +55,7 @@ async function screeningRoutes(fastify, options) {
         }
     });
 
-    fastify.delete("/screenings/:id", async (request, reply) => {
+    fastify.delete("/screenings/:id", { schema: deleteScreeningOptions }, async (request, reply) => {
         const id = parseInt(request.params.id, 10);
         const deletedScreening = deleteDocument('screenings', id);
         if (!deletedScreening) {
