@@ -1,10 +1,9 @@
 import {
-    getRevenues,
-    getRevenueById,
-    createRevenue,
-    updateRevenue,
-    deleteRevenue
-} from '../core/revenues.js';
+    getCollection,
+    insertDocument,
+    updateDocument,
+    deleteDocument
+} from '../database/database.js';
 import {
     getRevenuesOptions,
     getRevenueOptions,
@@ -25,13 +24,14 @@ import {
  */
 async function revenueRoutes(fastify, options) {
     fastify.get("/revenues", getRevenuesOptions, async (request, reply) => {
-        const revenues = getRevenues(fastify);
+        const revenues = await getCollection('revenues');
         reply.code(200).send(revenues);
     });
 
     fastify.get("/revenues/:id", getRevenueOptions, async (request, reply) => {
-        const id = parseInt(request.params.id, 10);
-        const revenue = getRevenueById(fastify, id);
+        const id = request.params.id;
+        const revenues = await getCollection('revenues');
+        const revenue = revenues.find(r => r._id.toString() === id);
         if (!revenue) {
             reply.code(400).send({ error: `Revenue with ID ${id} not found` });
         } else {
@@ -41,13 +41,13 @@ async function revenueRoutes(fastify, options) {
 
     fastify.post("/revenues", createRevenueOptions, async (request, reply) => {
         const newRevenue = request.body;
-        const insertedRevenue = createRevenue(fastify, newRevenue);
+        const insertedRevenue = await insertDocument('revenues', newRevenue);
         reply.code(201).send(insertedRevenue);
     });
 
     fastify.put("/revenues/:id", updateRevenueOptions, async (request, reply) => {
-        const id = parseInt(request.params.id, 10);
-        const updatedRevenue = updateRevenue(fastify, id, request.body);
+        const id = request.params.id;
+        const updatedRevenue = await updateDocument('revenues', id, request.body);
         if (!updatedRevenue) {
             reply.code(400).send({ error: `Revenue with ID ${id} not found` });
         } else {
@@ -56,8 +56,8 @@ async function revenueRoutes(fastify, options) {
     });
 
     fastify.delete("/revenues/:id", deleteRevenueOptions, async (request, reply) => {
-        const id = parseInt(request.params.id, 10);
-        const deletedRevenue = deleteRevenue(fastify, id);
+        const id = request.params.id;
+        const deletedRevenue = await deleteDocument('revenues', id);
         if (!deletedRevenue) {
             reply.code(400).send({ error: `Revenue with ID ${id} not found` });
         } else {

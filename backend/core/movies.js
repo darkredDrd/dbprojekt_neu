@@ -1,4 +1,6 @@
 import redis from './redisClient.js';
+import { connectToDatabase } from './mongoClient.js';
+import { ObjectId } from 'mongodb';
 
 export async function getMovies(fastify) {
     const cacheKey = 'movies';
@@ -20,7 +22,7 @@ export async function getMovies(fastify) {
     }
 }
 
-export function getMovieById(fastify, id) {
+export async function getMovieById(fastify, id) {
     const statement = fastify.db.prepare("SELECT * FROM Movie WHERE id = ?");
 
     try {
@@ -50,9 +52,15 @@ export async function createMovie(fastify, movieProps) {
             throw new Error('Failed to insert movie.');
         }
 
+        const newMovie = selectStatement.get(info.lastInsertRowid);
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('movies').insertOne(newMovie);
+
         await redis.del('movies'); // Cache invalidieren
 
-        return selectStatement.get(info.lastInsertRowid);
+        return newMovie;
     } catch (err) {
         fastify.log.error(err);
         throw err;
@@ -92,9 +100,15 @@ export async function updateMovie(fastify, id, movieProps) {
             throw new Error(`Movie with ID ${id} not found`);
         }
 
+        const updatedMovie = selectStatement.get(id);
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('movies').updateOne({ _id: new ObjectId(id) }, { $set: updatedMovie });
+
         await redis.del('movies'); // Cache invalidieren
 
-        return selectStatement.get(id);
+        return updatedMovie;
     } catch (err) {
         fastify.log.error(err);
         throw err;
@@ -113,6 +127,10 @@ export async function deleteMovie(fastify, id) {
         if (info.changes === 0) {
             throw new Error(`Movie with ID ${id} not found`);
         }
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('movies').deleteOne({ _id: new ObjectId(id) });
 
         await redis.del('movies'); // Cache invalidieren
 

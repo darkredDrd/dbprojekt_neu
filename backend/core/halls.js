@@ -1,4 +1,6 @@
 import redis from './redisClient.js';
+import { connectToDatabase } from './mongoClient.js';
+import { ObjectId } from 'mongodb';
 
 export async function getHalls(fastify) {
     const cacheKey = 'halls';
@@ -20,7 +22,7 @@ export async function getHalls(fastify) {
     }
 }
 
-export function getHallById(fastify, id) {
+export async function getHallById(fastify, id) {
     const statement = fastify.db.prepare("SELECT * FROM Hall WHERE id = ?");
 
     try {
@@ -50,9 +52,15 @@ export async function createHall(fastify, hallProps) {
             throw new Error('Failed to insert hall.');
         }
 
+        const newHall = selectStatement.get(info.lastInsertRowid);
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('halls').insertOne(newHall);
+
         await redis.del('halls'); // Cache invalidieren
 
-        return selectStatement.get(info.lastInsertRowid);
+        return newHall;
     } catch (err) {
         fastify.log.error(err);
         throw err;
@@ -92,9 +100,18 @@ export async function updateHall(fastify, id, hallProps) {
             throw new Error(`Hall with ID ${id} not found`);
         }
 
+        const updatedHall = selectStatement.get(id);
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('halls').updateOne(
+            { _id: new ObjectId(id) },
+            { $set: hallProps }
+        );
+
         await redis.del('halls'); // Cache invalidieren
 
-        return selectStatement.get(id);
+        return updatedHall;
     } catch (err) {
         fastify.log.error(err);
         throw err;
@@ -113,6 +130,10 @@ export async function deleteHall(fastify, id) {
         if (info.changes === 0) {
             throw new Error(`Hall with ID ${id} not found`);
         }
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('halls').deleteOne({ _id: new ObjectId(id) });
 
         await redis.del('halls'); // Cache invalidieren
 

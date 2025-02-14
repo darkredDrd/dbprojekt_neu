@@ -3,7 +3,7 @@ import {
     insertDocument,
     updateDocument,
     deleteDocument
-} from '../database/mockDatabase.js';
+} from '../database/database.js';
 import {
     getActorsOptions,
     getActorOptions,
@@ -24,13 +24,14 @@ import {
  */
 async function actorRoutes(fastify, options) {
     fastify.get("/actors", getActorsOptions, async (request, reply) => {
-        const actors = getCollection('actors');
+        const actors = await getCollection('actors');
         reply.code(200).send(actors);
     });
 
     fastify.get("/actors/:id", getActorOptions, async (request, reply) => {
-        const id = parseInt(request.params.id, 10);
-        const actor = getCollection('actors').find(a => a.id === id);
+        const id = request.params.id;
+        const actors = await getCollection('actors');
+        const actor = actors.find(a => a._id.toString() === id);
         if (!actor) {
             reply.code(400).send({ error: `Actor with ID ${id} not found` });
         } else {
@@ -40,13 +41,13 @@ async function actorRoutes(fastify, options) {
 
     fastify.post("/actors", createActorOptions, async (request, reply) => {
         const newActor = request.body;
-        const insertedActor = insertDocument('actors', newActor);
+        const insertedActor = await insertDocument('actors', newActor);
         reply.code(201).send(insertedActor);
     });
 
     fastify.put("/actors/:id", updateActorOptions, async (request, reply) => {
-        const id = parseInt(request.params.id, 10);
-        const updatedActor = updateDocument('actors', id, request.body);
+        const id = request.params.id;
+        const updatedActor = await updateDocument('actors', id, request.body);
         if (!updatedActor) {
             reply.code(400).send({ error: `Actor with ID ${id} not found` });
         } else {
@@ -55,8 +56,8 @@ async function actorRoutes(fastify, options) {
     });
 
     fastify.delete("/actors/:id", deleteActorOptions, async (request, reply) => {
-        const id = parseInt(request.params.id, 10);
-        const deletedActor = deleteDocument('actors', id);
+        const id = request.params.id;
+        const deletedActor = await deleteDocument('actors', id);
         if (!deletedActor) {
             reply.code(400).send({ error: `Actor with ID ${id} not found` });
         } else {

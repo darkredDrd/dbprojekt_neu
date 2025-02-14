@@ -3,8 +3,7 @@ import {
     insertDocument,
     updateDocument,
     deleteDocument
-} from '../database/mockDatabase.js';
-
+} from '../database/database.js';
 import {
     getMoviesOptions,
     getMovieOptions,
@@ -25,13 +24,14 @@ import {
  */
 async function movieRoutes(fastify, options) {
     fastify.get("/movies", { schema: getMoviesOptions.schema }, async (request, reply) => {
-        const movies = getCollection('movies');
+        const movies = await getCollection('movies');
         reply.code(200).send(movies);
     });
 
     fastify.get("/movies/:id", { schema: getMovieOptions.schema }, async (request, reply) => {
-        const id = parseInt(request.params.id, 10);
-        const movie = getCollection('movies').find(m => m.id === id);
+        const id = request.params.id;
+        const movies = await getCollection('movies');
+        const movie = movies.find(m => m._id.toString() === id);
         if (!movie) {
             reply.code(400).send({ error: `Movie with ID ${id} not found` });
         } else {
@@ -41,13 +41,13 @@ async function movieRoutes(fastify, options) {
 
     fastify.post("/movies", { schema: createMovieOptions.schema }, async (request, reply) => {
         const newMovie = request.body;
-        const insertedMovie = insertDocument('movies', newMovie);
+        const insertedMovie = await insertDocument('movies', newMovie);
         reply.code(201).send(insertedMovie);
     });
 
     fastify.put("/movies/:id", { schema: updateMovieOptions.schema }, async (request, reply) => {
-        const id = parseInt(request.params.id, 10);
-        const updatedMovie = updateDocument('movies', id, request.body);
+        const id = request.params.id;
+        const updatedMovie = await updateDocument('movies', id, request.body);
         if (!updatedMovie) {
             reply.code(400).send({ error: `Movie with ID ${id} not found` });
         } else {
@@ -56,8 +56,8 @@ async function movieRoutes(fastify, options) {
     });
 
     fastify.delete("/movies/:id", { schema: deleteMovieOptions.schema }, async (request, reply) => {
-        const id = parseInt(request.params.id, 10);
-        const deletedMovie = deleteDocument('movies', id);
+        const id = request.params.id;
+        const deletedMovie = await deleteDocument('movies', id);
         if (!deletedMovie) {
             reply.code(400).send({ error: `Movie with ID ${id} not found` });
         } else {

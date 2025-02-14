@@ -20,7 +20,7 @@ import {
     insertDocument,
     updateDocument,
     deleteDocument
-} from '../database/mockDatabase.js';
+} from '../database/database.js';
 
 /**
  * Includes the routes for the '/movieActors' API endpoint.
@@ -34,14 +34,15 @@ import {
  */
 async function movieActorRoutes(fastify, options) {
     fastify.get("/movieActors", getMovieActorsOptions, async (request, reply) => {
-        const movieActors = getCollection('movieActors');
+        const movieActors = await getCollection('movieActors');
         reply.code(200).send(movieActors);
     });
 
     fastify.get("/movieActors/:movie_id/:actor_id", getMovieActorOptions, async (request, reply) => {
-        const movie_id = parseInt(request.params.movie_id, 10);
-        const actor_id = parseInt(request.params.actor_id, 10);
-        const movieActor = getCollection('movieActors').find(ma => ma.movie_id === movie_id && ma.actor_id === actor_id);
+        const movie_id = request.params.movie_id;
+        const actor_id = request.params.actor_id;
+        const movieActors = await getCollection('movieActors');
+        const movieActor = movieActors.find(ma => ma.movie_id === parseInt(movie_id, 10) && ma.actor_id === parseInt(actor_id, 10));
         if (!movieActor) {
             reply.code(400).send({ error: `MovieActor with movie_id ${movie_id} and actor_id ${actor_id} not found` });
         } else {
@@ -51,14 +52,14 @@ async function movieActorRoutes(fastify, options) {
 
     fastify.post("/movieActors", createMovieActorOptions, async (request, reply) => {
         const newMovieActor = request.body;
-        const insertedMovieActor = insertDocument('movieActors', newMovieActor);
+        const insertedMovieActor = await insertDocument('movieActors', newMovieActor);
         reply.code(201).send(insertedMovieActor);
     });
 
     fastify.put("/movieActors/:movie_id/:actor_id", updateMovieActorOptions, async (request, reply) => {
-        const movie_id = parseInt(request.params.movie_id, 10);
-        const actor_id = parseInt(request.params.actor_id, 10);
-        const updatedMovieActor = updateDocument('movieActors', { movie_id, actor_id }, request.body);
+        const movie_id = request.params.movie_id;
+        const actor_id = request.params.actor_id;
+        const updatedMovieActor = await updateDocument('movieActors', { movie_id, actor_id }, request.body);
         if (!updatedMovieActor) {
             reply.code(400).send({ error: `MovieActor with movie_id ${movie_id} and actor_id ${actor_id} not found` });
         } else {
@@ -67,9 +68,9 @@ async function movieActorRoutes(fastify, options) {
     });
 
     fastify.delete("/movieActors/:movie_id/:actor_id", deleteMovieActorOptions, async (request, reply) => {
-        const movie_id = parseInt(request.params.movie_id, 10);
-        const actor_id = parseInt(request.params.actor_id, 10);
-        const deletedMovieActor = deleteDocument('movieActors', { movie_id, actor_id });
+        const movie_id = request.params.movie_id;
+        const actor_id = request.params.actor_id;
+        const deletedMovieActor = await deleteDocument('movieActors', { movie_id, actor_id });
         if (!deletedMovieActor) {
             reply.code(400).send({ error: `MovieActor with movie_id ${movie_id} and actor_id ${actor_id} not found` });
         } else {

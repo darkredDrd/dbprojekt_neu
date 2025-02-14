@@ -1,4 +1,7 @@
-export function getBuildings(fastify) {
+import { connectToDatabase } from './mongoClient.js';
+import { ObjectId } from 'mongodb';
+
+export async function getBuildings(fastify) {
     const statement = fastify.db.prepare("SELECT * FROM Building");
 
     try {
@@ -10,7 +13,7 @@ export function getBuildings(fastify) {
     }
 }
 
-export function getBuildingById(fastify, id) {
+export async function getBuildingById(fastify, id) {
     const statement = fastify.db.prepare("SELECT * FROM Building WHERE id = ?");
 
     try {
@@ -22,7 +25,7 @@ export function getBuildingById(fastify, id) {
     }
 }
 
-export function createBuilding(fastify, buildingProps) {
+export async function createBuilding(fastify, buildingProps) {
     if (!buildingProps.name || !buildingProps.address) {
         throw new Error('Missing required building properties.');
     }
@@ -40,14 +43,20 @@ export function createBuilding(fastify, buildingProps) {
             throw new Error('Failed to insert building.');
         }
 
-        return selectStatement.get(info.lastInsertRowid);
+        const newBuilding = selectStatement.get(info.lastInsertRowid);
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('buildings').insertOne(newBuilding);
+
+        return newBuilding;
     } catch (err) {
         fastify.log.error(err);
         throw err;
     }
 }
 
-export function updateBuilding(fastify, id, buildingProps) {
+export async function updateBuilding(fastify, id, buildingProps) {
     const fields = [];
     const values = [];
 
@@ -76,14 +85,23 @@ export function updateBuilding(fastify, id, buildingProps) {
             throw new Error(`Building with ID ${id} not found`);
         }
 
-        return selectStatement.get(id);
+        const updatedBuilding = selectStatement.get(id);
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('buildings').updateOne(
+            { _id: new ObjectId(id) },
+            { $set: buildingProps }
+        );
+
+        return updatedBuilding;
     } catch (err) {
         fastify.log.error(err);
         throw err;
     }
 }
 
-export function deleteBuilding(fastify, id) {
+export async function deleteBuilding(fastify, id) {
     const deleteStatement = fastify.db.prepare("DELETE FROM Building WHERE id = ?");
     const selectStatement = fastify.db.prepare("SELECT * FROM Building WHERE id = ?");
 
@@ -95,6 +113,10 @@ export function deleteBuilding(fastify, id) {
         if (info.changes === 0) {
             throw new Error(`Building with ID ${id} not found`);
         }
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('buildings').deleteOne({ _id: new ObjectId(id) });
 
         return buildingToDelete;
     } catch (err) {

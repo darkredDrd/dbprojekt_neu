@@ -1,5 +1,11 @@
-export function getRevenues(fastify) {
-    const statement = fastify.db.prepare("SELECT * FROM Revenue");
+import { connectToDatabase } from './mongoClient.js';
+import { ObjectId } from 'mongodb';
+import Database from 'better-sqlite3';
+
+const sqliteDb = new Database('./database/cinema-database.db');
+
+export async function getRevenues(fastify) {
+    const statement = sqliteDb.prepare("SELECT * FROM Revenue");
 
     try {
         const revenues = statement.all();
@@ -10,7 +16,7 @@ export function getRevenues(fastify) {
     }
 }
 
-export function getRevenueById(fastify, id) {
+export async function getRevenueById(fastify, id) {
     const statement = fastify.db.prepare("SELECT * FROM Revenue WHERE id = ?");
 
     try {
@@ -22,7 +28,7 @@ export function getRevenueById(fastify, id) {
     }
 }
 
-export function createRevenue(fastify, revenueProps) {
+export async function createRevenue(fastify, revenueProps) {
     if (!revenueProps.screening_id || !revenueProps.total_revenue) {
         throw new Error('Missing required revenue properties.');
     }
@@ -40,14 +46,20 @@ export function createRevenue(fastify, revenueProps) {
             throw new Error('Failed to insert revenue.');
         }
 
-        return selectStatement.get(info.lastInsertRowid);
+        const newRevenue = selectStatement.get(info.lastInsertRowid);
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('revenues').insertOne(newRevenue);
+
+        return newRevenue;
     } catch (err) {
         fastify.log.error(err);
         throw err;
     }
 }
 
-export function updateRevenue(fastify, id, revenueProps) {
+export async function updateRevenue(fastify, id, revenueProps) {
     const fields = [];
     const values = [];
 
@@ -76,14 +88,20 @@ export function updateRevenue(fastify, id, revenueProps) {
             throw new Error(`Revenue with ID ${id} not found`);
         }
 
-        return selectStatement.get(id);
+        const updatedRevenue = selectStatement.get(id);
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('revenues').updateOne({ _id: new ObjectId(id) }, { $set: updatedRevenue });
+
+        return updatedRevenue;
     } catch (err) {
         fastify.log.error(err);
         throw err;
     }
 }
 
-export function deleteRevenue(fastify, id) {
+export async function deleteRevenue(fastify, id) {
     const deleteStatement = fastify.db.prepare("DELETE FROM Revenue WHERE id = ?");
     const selectStatement = fastify.db.prepare("SELECT * FROM Revenue WHERE id = ?");
 
@@ -95,6 +113,10 @@ export function deleteRevenue(fastify, id) {
         if (info.changes === 0) {
             throw new Error(`Revenue with ID ${id} not found`);
         }
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('revenues').deleteOne({ _id: new ObjectId(id) });
 
         return revenueToDelete;
     } catch (err) {

@@ -1,4 +1,7 @@
-export function getMovieActors(fastify) {
+import { connectToDatabase } from './mongoClient.js';
+import { ObjectId } from 'mongodb';
+
+export async function getMovieActors(fastify) {
     const statement = fastify.db.prepare("SELECT * FROM MovieActor");
 
     try {
@@ -10,7 +13,7 @@ export function getMovieActors(fastify) {
     }
 }
 
-export function getMovieActorById(fastify, movie_id, actor_id) {
+export async function getMovieActorById(fastify, movie_id, actor_id) {
     const statement = fastify.db.prepare("SELECT * FROM MovieActor WHERE movie_id = ? AND actor_id = ?");
 
     try {
@@ -22,7 +25,7 @@ export function getMovieActorById(fastify, movie_id, actor_id) {
     }
 }
 
-export function createMovieActor(fastify, movieActorProps) {
+export async function createMovieActor(fastify, movieActorProps) {
     if (!movieActorProps.movie_id || !movieActorProps.actor_id) {
         throw new Error('Missing required movie actor properties.');
     }
@@ -40,14 +43,20 @@ export function createMovieActor(fastify, movieActorProps) {
             throw new Error('Failed to insert movie actor.');
         }
 
-        return selectStatement.get(movieActorProps.movie_id, movieActorProps.actor_id);
+        const newMovieActor = selectStatement.get(movieActorProps.movie_id, movieActorProps.actor_id);
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('movieActors').insertOne(newMovieActor);
+
+        return newMovieActor;
     } catch (err) {
         fastify.log.error(err);
         throw err;
     }
 }
 
-export function updateMovieActor(fastify, movie_id, actor_id, movieActorProps) {
+export async function updateMovieActor(fastify, movie_id, actor_id, movieActorProps) {
     const fields = [];
     const values = [];
 
@@ -76,14 +85,23 @@ export function updateMovieActor(fastify, movie_id, actor_id, movieActorProps) {
             throw new Error(`MovieActor with movie_id ${movie_id} and actor_id ${actor_id} not found`);
         }
 
-        return selectStatement.get(movie_id, actor_id);
+        const updatedMovieActor = selectStatement.get(movie_id, actor_id);
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('movieActors').updateOne(
+            { movie_id: new ObjectId(movie_id), actor_id: new ObjectId(actor_id) },
+            { $set: movieActorProps }
+        );
+
+        return updatedMovieActor;
     } catch (err) {
         fastify.log.error(err);
         throw err;
     }
 }
 
-export function deleteMovieActor(fastify, movie_id, actor_id) {
+export async function deleteMovieActor(fastify, movie_id, actor_id) {
     const deleteStatement = fastify.db.prepare("DELETE FROM MovieActor WHERE movie_id = ? AND actor_id = ?");
     const selectStatement = fastify.db.prepare("SELECT * FROM MovieActor WHERE movie_id = ? AND actor_id = ?");
 
@@ -95,6 +113,10 @@ export function deleteMovieActor(fastify, movie_id, actor_id) {
         if (info.changes === 0) {
             throw new Error(`MovieActor with movie_id ${movie_id} and actor_id ${actor_id} not found`);
         }
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('movieActors').deleteOne({ movie_id: new ObjectId(movie_id), actor_id: new ObjectId(actor_id) });
 
         return movieActorToDelete;
     } catch (err) {

@@ -1,9 +1,9 @@
 import fp from "fastify-plugin";
 import Database from "better-sqlite3";
-
+import { connectToDatabase } from '../core/mongoClient.js';
+import { ObjectId } from 'mongodb';
 
 const filePath = "./database/cinema-database.db";
-
 
 // Defines SQL statement to create tables - note that we don't use VARCHAR as SQLite automatically converts it to TEXT //
 // We use cascading deletes to ensure that child-data is deleted when parent-data is deleted //
@@ -60,7 +60,6 @@ CREATE TABLE IF NOT EXISTS Revenue (
 );
 `;
 
-
 // Initialize the database
 const db = new Database(filePath);
 
@@ -75,3 +74,30 @@ export default fp(async (fastify, opts) => {
         done();
     });
 });
+
+export async function getCollection(collectionName) {
+    const db = await connectToDatabase();
+    return db.collection(collectionName).find().toArray();
+}
+
+export async function insertDocument(collectionName, document) {
+    const db = await connectToDatabase();
+    const result = await db.collection(collectionName).insertOne(document);
+    return result.ops[0];
+}
+
+export async function updateDocument(collectionName, id, updatedDocument) {
+    const db = await connectToDatabase();
+    const result = await db.collection(collectionName).findOneAndUpdate(
+        { _id: new ObjectId(id) },
+        { $set: updatedDocument },
+        { returnOriginal: false }
+    );
+    return result.value;
+}
+
+export async function deleteDocument(collectionName, id) {
+    const db = await connectToDatabase();
+    const result = await db.collection(collectionName).findOneAndDelete({ _id: new ObjectId(id) });
+    return result.value;
+}

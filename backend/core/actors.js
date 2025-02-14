@@ -1,4 +1,7 @@
-export function getActors(fastify) {
+import { connectToDatabase } from './mongoClient.js';
+import { ObjectId } from 'mongodb';
+
+export async function getActors(fastify) {
     const statement = fastify.db.prepare("SELECT * FROM Actor");
 
     try {
@@ -10,7 +13,7 @@ export function getActors(fastify) {
     }
 }
 
-export function getActorById(fastify, id) {
+export async function getActorById(fastify, id) {
     const statement = fastify.db.prepare("SELECT * FROM Actor WHERE id = ?");
 
     try {
@@ -22,7 +25,7 @@ export function getActorById(fastify, id) {
     }
 }
 
-export function createActor(fastify, actorProps) {
+export async function createActor(fastify, actorProps) {
     if (!actorProps.name || !actorProps.birth_date) {
         throw new Error('Missing required actor properties.');
     }
@@ -40,14 +43,20 @@ export function createActor(fastify, actorProps) {
             throw new Error('Failed to insert actor.');
         }
 
-        return selectStatement.get(info.lastInsertRowid);
+        const newActor = selectStatement.get(info.lastInsertRowid);
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('actors').insertOne(newActor);
+
+        return newActor;
     } catch (err) {
         fastify.log.error(err);
         throw err;
     }
 }
 
-export function updateActor(fastify, id, actorProps) {
+export async function updateActor(fastify, id, actorProps) {
     const fields = [];
     const values = [];
 
@@ -76,14 +85,23 @@ export function updateActor(fastify, id, actorProps) {
             throw new Error(`Actor with ID ${id} not found`);
         }
 
-        return selectStatement.get(id);
+        const updatedActor = selectStatement.get(id);
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('actors').updateOne(
+            { _id: new ObjectId(id) },
+            { $set: actorProps }
+        );
+
+        return updatedActor;
     } catch (err) {
         fastify.log.error(err);
         throw err;
     }
 }
 
-export function deleteActor(fastify, id) {
+export async function deleteActor(fastify, id) {
     const deleteStatement = fastify.db.prepare("DELETE FROM Actor WHERE id = ?");
     const selectStatement = fastify.db.prepare("SELECT * FROM Actor WHERE id = ?");
 
@@ -95,6 +113,10 @@ export function deleteActor(fastify, id) {
         if (info.changes === 0) {
             throw new Error(`Actor with ID ${id} not found`);
         }
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('actors').deleteOne({ _id: new ObjectId(id) });
 
         return actorToDelete;
     } catch (err) {

@@ -1,4 +1,9 @@
+import { connectToDatabase } from './mongoClient.js';
+import { ObjectId } from 'mongodb';
+import Database from 'better-sqlite3';
 import redis from './redisClient.js';
+
+const sqliteDb = new Database('./database/cinema-database.db');
 
 export async function getScreenings(fastify) {
     const cacheKey = 'screenings';
@@ -50,9 +55,15 @@ export async function createScreening(fastify, screeningProps) {
             throw new Error('Failed to insert screening.');
         }
 
+        const newScreening = selectStatement.get(info.lastInsertRowid);
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('screenings').insertOne(newScreening);
+
         await redis.del('screenings'); // Cache invalidieren
 
-        return selectStatement.get(info.lastInsertRowid);
+        return newScreening;
     } catch (err) {
         fastify.log.error(err);
         throw err;
