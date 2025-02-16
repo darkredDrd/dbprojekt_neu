@@ -6,7 +6,8 @@ import {
     deleteMovieActor,
     getActorsForMovie,
     addActorToMovie,
-    deleteActorFromMovie
+    deleteActorFromMovie,
+    getMoviesForActor
 } from '../core/movieActor.js';
 import {
     getMovieActorsOptions,
@@ -16,7 +17,8 @@ import {
     deleteMovieActorOptions,
     getActorsForMovieOptions,
     addActorToMovieOptions,
-    deleteActorFromMovieOptions
+    deleteActorFromMovieOptions,
+    getMoviesForActorOptions
 } from '../schemas/movieActor.schemas.js';
 
 /**
@@ -79,6 +81,13 @@ async function movieActorRoutes(fastify, options) {
         const movie_id = parseInt(request.params.movie_id, 10);
         const actors = await getActorsForMovie(fastify, movie_id);
         reply.code(200).send(actors);
+    });
+
+    // Add this route to fetch movies for a specific actor
+    fastify.get("/actors/:actor_id/movies", { schema: getMoviesForActorOptions }, async (request, reply) => {
+        const actor_id = parseInt(request.params.actor_id, 10);
+        const movies = await getMoviesForActor(fastify, actor_id);
+        reply.code(200).send(movies);
     });
 
     // Add this route to add an actor to a specific movie

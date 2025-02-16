@@ -1,10 +1,11 @@
 const movieActorSchema = {
-    $id: "movieActorSchema",
+    $id: 'movieActorSchema',
     type: "object",
     properties: {
         movie_id: { type: "integer" },
-        actor_id: { type: "integer" },
+        actor_id: { type: "integer" }
     },
+    required: ["movie_id", "actor_id"]
 };
 
 const getMovieActorsOptions = {
@@ -12,10 +13,10 @@ const getMovieActorsOptions = {
         response: {
             200: {
                 type: "array",
-                items: { $ref: "movieActorSchema#" },
-            },
-        },
-    },
+                items: { $ref: 'movieActorSchema#' }
+            }
+        }
+    }
 };
 
 const getMovieActorOptions = {
@@ -24,40 +25,23 @@ const getMovieActorOptions = {
             type: "object",
             properties: {
                 movie_id: { type: "integer" },
-                actor_id: { type: "integer" },
+                actor_id: { type: "integer" }
             },
-            required: ["movie_id", "actor_id"],
+            required: ["movie_id", "actor_id"]
         },
         response: {
-            200: {
-                type: "object",
-                properties: {
-                    movieActor: { $ref: "movieActorSchema#" },
-                },
-            },
-        },
-    },
+            200: { $ref: 'movieActorSchema#' }
+        }
+    }
 };
 
 const createMovieActorOptions = {
     schema: {
-        body: {
-            type: "object",
-            properties: {
-                movie_id: { type: "integer" },
-                actor_id: { type: "integer" },
-            },
-            required: ["movie_id", "actor_id"],
-        },
+        body: { $ref: 'movieActorSchema#' },
         response: {
-            201: {
-                type: "object",
-                properties: {
-                    movieActor: { $ref: "movieActorSchema#" },
-                },
-            },
-        },
-    },
+            201: { $ref: 'movieActorSchema#' }
+        }
+    }
 };
 
 const updateMovieActorOptions = {
@@ -66,26 +50,15 @@ const updateMovieActorOptions = {
             type: "object",
             properties: {
                 movie_id: { type: "integer" },
-                actor_id: { type: "integer" },
+                actor_id: { type: "integer" }
             },
-            required: ["movie_id", "actor_id"],
+            required: ["movie_id", "actor_id"]
         },
-        body: {
-            type: "object",
-            properties: {
-                movie_id: { type: "integer" },
-                actor_id: { type: "integer" },
-            },
-        },
+        body: { $ref: 'movieActorSchema#' },
         response: {
-            200: {
-                type: "object",
-                properties: {
-                    movieActor: { $ref: "movieActorSchema#" },
-                },
-            },
-        },
-    },
+            200: { $ref: 'movieActorSchema#' }
+        }
+    }
 };
 
 const deleteMovieActorOptions = {
@@ -94,30 +67,29 @@ const deleteMovieActorOptions = {
             type: "object",
             properties: {
                 movie_id: { type: "integer" },
-                actor_id: { type: "integer" },
+                actor_id: { type: "integer" }
             },
-            required: ["movie_id", "actor_id"],
+            required: ["movie_id", "actor_id"]
         },
         response: {
             200: {
                 type: "object",
                 properties: {
-                    message: { type: "string" },
-                },
-            },
-        },
-    },
+                    message: { type: "string" }
+                }
+            }
+        }
+    }
 };
 
-// Schema for fetching actors for a specific movie
 const getActorsForMovieOptions = {
     schema: {
         params: {
             type: "object",
             properties: {
-                movie_id: { type: "integer" },
+                movie_id: { type: "integer" }
             },
-            required: ["movie_id"],
+            required: ["movie_id"]
         },
         response: {
             200: {
@@ -127,61 +99,81 @@ const getActorsForMovieOptions = {
                     properties: {
                         id: { type: "integer" },
                         name: { type: "string" },
-                    },
-                },
-            },
-        },
-    },
+                        birth_date: { type: "string", format: "date" }
+                    }
+                }
+            }
+        }
+    }
 };
 
-// Schema for adding an actor to a specific movie
 const addActorToMovieOptions = {
     schema: {
         params: {
             type: "object",
             properties: {
-                movie_id: { type: "integer" },
+                movie_id: { type: "integer" }
             },
-            required: ["movie_id"],
+            required: ["movie_id"]
         },
         body: {
             type: "object",
             properties: {
-                actorId: { type: "integer" },
+                actorId: { type: "integer" }
             },
-            required: ["actorId"],
+            required: ["actorId"]
         },
         response: {
-            201: {
-                type: "object",
-                properties: {
-                    message: { type: "string" },
-                },
-            },
-        },
-    },
+            201: { $ref: 'movieActorSchema#' }
+        }
+    }
 };
 
-// Schema for deleting an actor from a specific movie
 const deleteActorFromMovieOptions = {
     schema: {
         params: {
             type: "object",
             properties: {
                 movie_id: { type: "integer" },
-                actor_id: { type: "integer" },
+                actor_id: { type: "integer" }
             },
-            required: ["movie_id", "actor_id"],
+            required: ["movie_id", "actor_id"]
         },
         response: {
             200: {
                 type: "object",
                 properties: {
-                    message: { type: "string" },
-                },
+                    message: { type: "string" }
+                }
+            }
+        }
+    }
+};
+
+const getMoviesForActorOptions = {
+    schema: {
+        params: {
+            type: "object",
+            properties: {
+                actor_id: { type: "integer" }
             },
+            required: ["actor_id"]
         },
-    },
+        response: {
+            200: {
+                type: "array",
+                items: {
+                    type: "object",
+                    properties: {
+                        id: { type: "integer" },
+                        title: { type: "string" },
+                        genre: { type: "string" },
+                        duration_minutes: { type: "integer" }
+                    }
+                }
+            }
+        }
+    }
 };
 
 export {
@@ -194,4 +186,5 @@ export {
     getActorsForMovieOptions,
     addActorToMovieOptions,
     deleteActorFromMovieOptions,
+    getMoviesForActorOptions
 };

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchMovies } from '../../services/movieService';
-import { fetchMovieActors, addActorToMovie, deleteActorFromMovie } from '../../services/movieActorService';
+import { fetchMoviesForActor, addActorToMovie, deleteActorFromMovie } from '../../services/movieActorService';
 
 function ActorMoviesModal({ show, handleClose, actorId }) {
     const [movies, setMovies] = useState([]);
@@ -13,16 +13,16 @@ function ActorMoviesModal({ show, handleClose, actorId }) {
             setMovies(movies);
         }
 
+        async function loadActorMovies() {
+            const actorMovies = await fetchMoviesForActor(actorId);
+            setActorMovies(actorMovies);
+        }
+
         if (show) {
             loadMovies();
             loadActorMovies();
         }
     }, [show, actorId]);
-
-    const loadActorMovies = async () => {
-        const actorMovies = await fetchMovieActors(actorId);
-        setActorMovies(actorMovies);
-    };
 
     const handleAddMovie = async () => {
         if (selectedMovieId) {

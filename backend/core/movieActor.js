@@ -192,3 +192,20 @@ export async function deleteActorFromMovie(fastify, movie_id, actor_id) {
         throw err;
     }
 }
+
+export async function getMoviesForActor(fastify, actor_id) {
+    const statement = fastify.db.prepare(`
+        SELECT Movie.*
+        FROM Movie
+        JOIN MovieActor ON Movie.id = MovieActor.movie_id
+        WHERE MovieActor.actor_id = ?
+    `);
+
+    try {
+        const movies = statement.all(actor_id);
+        return movies;
+    } catch (err) {
+        fastify.log.error(err);
+        return null;
+    }
+}

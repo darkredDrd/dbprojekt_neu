@@ -1,15 +1,31 @@
-const API_URL = 'http://localhost:8080/api/movies';
+const API_URL = 'http://localhost:8080/api';
 
 export async function fetchMovieActors(movieId) {
-    const response = await fetch(`${API_URL}/${movieId}/actors`);
+    const response = await fetch(`${API_URL}/movies/${movieId}/actors`);
     if (!response.ok) {
         throw new Error('Failed to fetch movie actors');
     }
     return response.json();
 }
 
+export async function fetchActorsForMovie(movieId) {
+    const response = await fetch(`${API_URL}/movies/${movieId}/actors`);
+    if (!response.ok) {
+        throw new Error('Failed to fetch actors for movie');
+    }
+    return response.json();
+}
+
+export async function fetchMoviesForActor(actorId) {
+    const response = await fetch(`${API_URL}/actors/${actorId}/movies`);
+    if (!response.ok) {
+        throw new Error('Failed to fetch movies for actor');
+    }
+    return response.json();
+}
+
 export async function addActorToMovie(movieId, actorId) {
-    const response = await fetch(`${API_URL}/${movieId}/actors`, {
+    const response = await fetch(`${API_URL}/movies/${movieId}/actors`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -23,7 +39,7 @@ export async function addActorToMovie(movieId, actorId) {
 }
 
 export async function deleteActorFromMovie(movieId, actorId) {
-    const response = await fetch(`${API_URL}/${movieId}/actors/${actorId}`, {
+    const response = await fetch(`${API_URL}/movies/${movieId}/actors/${actorId}`, {
         method: 'DELETE',
     });
     if (!response.ok) {
