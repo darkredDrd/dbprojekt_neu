@@ -124,3 +124,71 @@ export async function deleteMovieActor(fastify, movie_id, actor_id) {
         throw err;
     }
 }
+
+export async function getActorsForMovie(fastify, movie_id) {
+    const statement = fastify.db.prepare(`
+        SELECT Actor.*
+        FROM Actor
+        JOIN MovieActor ON Actor.id = MovieActor.actor_id
+        WHERE MovieActor.movie_id = ?
+    `);
+
+    try {
+        const actors = statement.all(movie_id);
+        return actors;
+    } catch (err) {
+        fastify.log.error(err);
+        return null;
+    }
+}
+
+export async function addActorToMovie(fastify, movie_id, actor_id) {
+    const insertStatement = fastify.db.prepare(`
+        INSERT INTO MovieActor (movie_id, actor_id)
+        VALUES (?, ?)
+    `);
+    const selectStatement = fastify.db.prepare("SELECT * FROM MovieActor WHERE movie_id = ? AND actor_id = ?");
+
+    try {
+        const info = insertStatement.run(movie_id, actor_id);
+
+        if (!info.changes) {
+            throw new Error('Failed to add actor to movie.');
+        }
+
+        const newMovieActor = selectStatement.get(movie_id, actor_id);
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('movieActors').insertOne(newMovieActor);
+
+        return newMovieActor;
+    } catch (err) {
+        fastify.log.error(err);
+        throw err;
+    }
+}
+
+export async function deleteActorFromMovie(fastify, movie_id, actor_id) {
+    const deleteStatement = fastify.db.prepare("DELETE FROM MovieActor WHERE movie_id = ? AND actor_id = ?");
+    const selectStatement = fastify.db.prepare("SELECT * FROM MovieActor WHERE movie_id = ? AND actor_id = ?");
+
+    try {
+        const movieActorToDelete = selectStatement.get(movie_id, actor_id);
+
+        const info = deleteStatement.run(movie_id, actor_id);
+
+        if (info.changes === 0) {
+            throw new Error(`MovieActor with movie_id ${movie_id} and actor_id ${actor_id} not found`);
+        }
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('movieActors').deleteOne({ movie_id: new ObjectId(movie_id), actor_id: new ObjectId(actor_id) });
+
+        return movieActorToDelete;
+    } catch (err) {
+        fastify.log.error(err);
+        throw err;
+    }
+}

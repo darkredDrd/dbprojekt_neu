@@ -3,7 +3,10 @@ import {
     getMovieActorById,
     createMovieActor,
     updateMovieActor,
-    deleteMovieActor
+    deleteMovieActor,
+    getActorsForMovie,
+    addActorToMovie,
+    deleteActorFromMovie
 } from '../core/movieActor.js';
 import {
     getMovieActorsOptions,
