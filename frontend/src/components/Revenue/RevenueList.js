@@ -78,7 +78,7 @@ function RevenueList() {
 
     const getHallName = (hallId) => {
         const hall = halls.find(h => h.id === hallId);
-        return hall ? hall.name : 'Loading...';
+        return hall ? `${hall.building_name} - ${hall.name}` : 'Loading...';
     };
 
     const formatDateTime = (dateTime) => {
