@@ -7,17 +7,17 @@ function ActorMoviesModal({ show, handleClose, actorId }) {
     const [actorMovies, setActorMovies] = useState([]);
     const [selectedMovieId, setSelectedMovieId] = useState('');
 
+    const loadMovies = async () => {
+        const movies = await fetchMovies();
+        setMovies(movies);
+    };
+
+    const loadActorMovies = async () => {
+        const actorMovies = await fetchMoviesForActor(actorId);
+        setActorMovies(actorMovies);
+    };
+
     useEffect(() => {
-        async function loadMovies() {
-            const movies = await fetchMovies();
-            setMovies(movies);
-        }
-
-        async function loadActorMovies() {
-            const actorMovies = await fetchMoviesForActor(actorId);
-            setActorMovies(actorMovies);
-        }
-
         if (show) {
             loadMovies();
             loadActorMovies();
@@ -32,14 +32,14 @@ function ActorMoviesModal({ show, handleClose, actorId }) {
                 return;
             }
             await addActorToMovie(selectedMovieId, actorId);
-            loadActorMovies();
+            await loadActorMovies(); // Stelle sicher, dass loadActorMovies aufgerufen wird
             setSelectedMovieId('');
         }
     };
 
     const handleDeleteMovie = async (movieId) => {
         await deleteActorFromMovie(movieId, actorId);
-        loadActorMovies();
+        await loadActorMovies(); // Stelle sicher, dass loadActorMovies aufgerufen wird
     };
 
     if (!show) {
