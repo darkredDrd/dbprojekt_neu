@@ -11,6 +11,13 @@ import {
     updateActorOptions,
     deleteActorOptions
 } from '../schemas/actors.schemas.js';
+import {
+    getActors,
+    getActorById,
+    createActor,
+    updateActor,
+    deleteActor
+} from '../core/actors.js';
 
 /**
  * Includes the routes for the '/actors' API endpoint.
@@ -23,15 +30,14 @@ import {
  * - DELETE an actor by ID
  */
 async function actorRoutes(fastify, options) {
-    fastify.get("/actors", getActorsOptions, async (request, reply) => {
-        const actors = await getCollection('actors');
+    fastify.get("/actors", { schema: getActorsOptions }, async (request, reply) => {
+        const actors = await getActors(fastify);
         reply.code(200).send(actors);
     });
 
-    fastify.get("/actors/:id", getActorOptions, async (request, reply) => {
-        const id = request.params.id;
-        const actors = await getCollection('actors');
-        const actor = actors.find(a => a._id.toString() === id);
+    fastify.get("/actors/:id", { schema: getActorOptions }, async (request, reply) => {
+        const id = parseInt(request.params.id, 10);
+        const actor = await getActorById(fastify, id);
         if (!actor) {
             reply.code(400).send({ error: `Actor with ID ${id} not found` });
         } else {
@@ -39,15 +45,15 @@ async function actorRoutes(fastify, options) {
         }
     });
 
-    fastify.post("/actors", createActorOptions, async (request, reply) => {
+    fastify.post("/actors", { schema: createActorOptions }, async (request, reply) => {
         const newActor = request.body;
-        const insertedActor = await insertDocument('actors', newActor);
+        const insertedActor = await createActor(fastify, newActor);
         reply.code(201).send(insertedActor);
     });
 
-    fastify.put("/actors/:id", updateActorOptions, async (request, reply) => {
-        const id = request.params.id;
-        const updatedActor = await updateDocument('actors', id, request.body);
+    fastify.put("/actors/:id", { schema: updateActorOptions }, async (request, reply) => {
+        const id = parseInt(request.params.id, 10);
+        const updatedActor = await updateActor(fastify, id, request.body);
         if (!updatedActor) {
             reply.code(400).send({ error: `Actor with ID ${id} not found` });
         } else {
@@ -55,9 +61,9 @@ async function actorRoutes(fastify, options) {
         }
     });
 
-    fastify.delete("/actors/:id", deleteActorOptions, async (request, reply) => {
-        const id = request.params.id;
-        const deletedActor = await deleteDocument('actors', id);
+    fastify.delete("/actors/:id", { schema: deleteActorOptions }, async (request, reply) => {
+        const id = parseInt(request.params.id, 10);
+        const deletedActor = await deleteActor(fastify, id);
         if (!deletedActor) {
             reply.code(400).send({ error: `Actor with ID ${id} not found` });
         } else {

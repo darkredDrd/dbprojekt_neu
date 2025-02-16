@@ -36,7 +36,7 @@ async function screeningRoutes(fastify, options) {
     });
 
     fastify.get("/screenings/:id", { schema: getScreeningOptions }, async (request, reply) => {
-        const id = request.params.id;
+        const id = parseInt(request.params.id, 10);
         const screenings = await getCollection('screenings');
         const screening = screenings.find(s => s._id.toString() === id);
         if (!screening) {
@@ -53,7 +53,7 @@ async function screeningRoutes(fastify, options) {
     });
 
     fastify.put("/screenings/:id", { schema: updateScreeningOptions }, async (request, reply) => {
-        const id = request.params.id;
+        const id = parseInt(request.params.id, 10);
         const updatedScreening = await updateScreening(fastify, id, request.body);
         if (!updatedScreening) {
             reply.code(400).send({ error: `Screening with ID ${id} not found` });
@@ -63,7 +63,7 @@ async function screeningRoutes(fastify, options) {
     });
 
     fastify.delete("/screenings/:id", { schema: deleteScreeningOptions }, async (request, reply) => {
-        const id = request.params.id;
+        const id = parseInt(request.params.id, 10);
         const deletedScreening = await deleteScreening(fastify, id);
         if (!deletedScreening) {
             reply.code(400).send({ error: `Screening with ID ${id} not found` });
