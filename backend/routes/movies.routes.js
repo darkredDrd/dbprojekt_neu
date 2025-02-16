@@ -1,10 +1,4 @@
 import {
-    getCollection,
-    insertDocument,
-    updateDocument,
-    deleteDocument
-} from '../database/database.js';
-import {
     getMoviesOptions,
     getMovieOptions,
     createMovieOptions,
