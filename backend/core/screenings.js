@@ -103,9 +103,18 @@ export async function updateScreening(fastify, id, screeningProps) {
             throw new Error(`Screening with ID ${id} not found`);
         }
 
+        const updatedScreening = selectStatement.get(id);
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('screenings').updateOne(
+            { _id: new ObjectId(id) },
+            { $set: updatedScreening }
+        );
+
         await redis.del('screenings'); // Cache invalidieren
 
-        return selectStatement.get(id);
+        return updatedScreening;
     } catch (err) {
         fastify.log.error(err);
         throw err;
@@ -124,6 +133,10 @@ export async function deleteScreening(fastify, id) {
         if (info.changes === 0) {
             throw new Error(`Screening with ID ${id} not found`);
         }
+
+        // Synchronisiere mit MongoDB
+        const mongoDb = await connectToDatabase();
+        await mongoDb.collection('screenings').deleteOne({ _id: new ObjectId(id) });
 
         await redis.del('screenings'); // Cache invalidieren
 

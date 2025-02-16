@@ -1,11 +1,4 @@
 import {
-    getCollection,
-    insertDocument,
-    updateDocument,
-    deleteDocument
-} from '../database/database.js';
-
-import {
     getScreeningsOptions,
     getScreeningOptions,
     createScreeningOptions,
@@ -16,7 +9,9 @@ import {
 import {
     createScreening,
     updateScreening,
-    deleteScreening
+    deleteScreening,
+    getScreenings,
+    getScreeningById
 } from '../core/screenings.js';
 
 /**
@@ -31,14 +26,13 @@ import {
  */
 async function screeningRoutes(fastify, options) {
     fastify.get("/screenings", { schema: getScreeningsOptions }, async (request, reply) => {
-        const screenings = await getCollection('screenings');
+        const screenings = await getScreenings(fastify);
         reply.code(200).send(screenings);
     });
 
     fastify.get("/screenings/:id", { schema: getScreeningOptions }, async (request, reply) => {
         const id = parseInt(request.params.id, 10);
-        const screenings = await getCollection('screenings');
-        const screening = screenings.find(s => s._id.toString() === id);
+        const screening = await getScreeningById(fastify, id);
         if (!screening) {
             reply.code(400).send({ error: `Screening with ID ${id} not found` });
         } else {

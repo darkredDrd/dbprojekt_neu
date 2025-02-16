@@ -32,10 +32,9 @@ function ScreeningList() {
     }, []);
 
     const handleDelete = async (id) => {
-        await deleteMovie(id); // Deletes the film with the given id
-        loadMovies(); // Loads the updated list of films
+        await deleteScreening(id); // Löscht das Screening mit der gegebenen ID
+        loadScreenings(); // Lädt die aktualisierte Liste der Screenings
     };
-    
 
     const handleShowModal = () => setShowModal(true);
     const handleCloseModal = () => {
