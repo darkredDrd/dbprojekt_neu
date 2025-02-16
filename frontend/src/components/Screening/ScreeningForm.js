@@ -73,7 +73,7 @@ function ScreeningForm({ screeningToEdit, handleSubmit }) {
                     <option value="">Select a hall</option>
                     {halls.map(hall => (
                         <option key={hall.id} value={hall.id}>
-                            {hall.name}
+                            {hall.building_name} - {hall.name}
                         </option>
                     ))}
                 </select>

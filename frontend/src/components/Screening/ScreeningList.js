@@ -54,7 +54,7 @@ function ScreeningList() {
 
     const getHallName = (id) => {
         const hall = halls.find(hall => hall.id === id);
-        return hall ? hall.name : 'Unknown';
+        return hall ? `${hall.building_name} - ${hall.name}` : 'Unknown';
     };
 
     const formatDateTime = (dateTime) => {

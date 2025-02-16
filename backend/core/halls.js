@@ -10,7 +10,11 @@ export async function getHalls(fastify) {
         return JSON.parse(cachedHalls);
     }
 
-    const statement = fastify.db.prepare("SELECT * FROM Hall");
+    const statement = fastify.db.prepare(`
+        SELECT Hall.*, Building.name AS building_name
+        FROM Hall
+        JOIN Building ON Hall.building_id = Building.id
+    `);
 
     try {
         const halls = statement.all();
@@ -23,7 +27,12 @@ export async function getHalls(fastify) {
 }
 
 export async function getHallById(fastify, id) {
-    const statement = fastify.db.prepare("SELECT * FROM Hall WHERE id = ?");
+    const statement = fastify.db.prepare(`
+        SELECT Hall.*, Building.name AS building_name
+        FROM Hall
+        JOIN Building ON Hall.building_id = Building.id
+        WHERE Hall.id = ?
+    `);
 
     try {
         const hall = statement.get(id);
